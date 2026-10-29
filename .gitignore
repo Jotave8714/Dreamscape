@@ -48,3 +48,7 @@ crashlytics-build.properties
 # OS
 .DS_Store
 Thumbs.db
+
+# Blender (backups automáticos)
+*.blend1
+*.blend2
