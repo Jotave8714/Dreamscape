@@ -1,0 +1,13 @@
+{
+  "card": "DS-03",
+  "phase": "Pressa pra que",
+  "scene": "Assets/Scenes/DS03_Fase2_Layout.unity",
+  "storyboard": "Reutilizar material concluido pelo autor: universidade, cochilo e entrada no sonho; preservar premissa do GDD.",
+  "solution": ["Entrada e coleta de velocidade", "Ler bifurcacao", "Evitar caminho direto", "Escolher desvio", "Planejar no patamar", "Cruzar piso temporario", "Portal final"],
+  "learning": "A indicacao CORRA RETO conduz a queda; repetir tentativa com pista lateral e regra fixa permite aprender o desvio.",
+  "temporaryFloor": {"lengthMeters": 8, "tiles": 4, "activation": "Cruzar faixa antes da ponte", "timer": "Definir em DS15 com a velocidade DS11: tempo >= comprimento / velocidade + margem de reacao; nao iniciar na coleta."},
+  "victory": "Cruzar o portal final e concluir o prototipo.",
+  "reset": ["Entrada da Fase 2", "Remover poder", "Restaurar coletavel", "Restaurar todos os pisos e temporizador"],
+  "handoff": {"DS06": "Geometria jogavel", "DS09": "Pegadinha e piso temporario", "DS11": "Modificador de velocidade", "DS15": "Distancias, tempos e retorno audiovisual"},
+  "reviewPending": ["Apresentar percurso ao grupo", "Confirmar pista compreensivel apos falha", "Validar tempo com DS11", "Relacionar transicao com storyboard final"]
+}
