@@ -1,0 +1,18 @@
+{
+  "card": "DS-02",
+  "scene": "Assets/Scenes/DS02_Fase1_Layout.unity",
+  "status": "draft_awaiting_team_review",
+  "premise": "Saida facil: indicacao de saida leva ao chao falso; marcas azuis sugerem a rota elevada.",
+  "safeRoute": ["N0", "N1", "N3", "N4", "N5", "N6", "N7"],
+  "trapRoute": ["N0", "N2", "T0"],
+  "requiredPowerEdge": {"from": "N3", "to": "N4", "requires": "double_jump", "pickup": "N1"},
+  "victory": "Atravessar o portal N7 apos percorrer a rota elevada.",
+  "failure": "Pisar em T0 faz o chao ceder; cair aciona a zona de falha.",
+  "reset": ["Retornar ao spawn N0", "Remover poder", "Restaurar coletavel N1", "Restaurar chao T0 e objetos", "Revalidar grafo"],
+  "determinism": "Mesma armadilha e pistas em todas as tentativas; sem sorteio.",
+  "layoutMeters": {"platformSize": [3,3], "platformTopHeights": [0.8,1.4,2.0], "clearGaps": [4.0,2.5,1.0]},
+  "basicJumpEstimate": {"speed": 5.0, "height": 1.1, "gravityMagnitude": 20.0, "rise": 0.6, "idealHorizontalRange": 2.78, "method": "v0=sqrt(2*g*h); descending t=(v0+sqrt(v0*v0-2*g*rise))/g; range=speed*t", "limitations": "Estimativa continua sem colisor, discretizacao ou aceleracao; nao substitui playtest."},
+  "handoff": {"DS05": "Montar geometria final e calibrar distancias", "DS07": "Morte e restauracao", "DS08": "Chao falso, pista e chegada", "DS10": "Pulo duplo", "DS14": "Grafo com estado de poder"},
+  "reviewChecklist": ["Outro integrante entende a pista apos falhar", "Salto simples nao cruza N3-N4", "Pulo duplo cruza N3-N4 com margem", "Todas as rotas do grafo correspondem ao mapa", "Vitoria e restauracao acordadas com grupo"],
+  "implementedHere": "Desenho espacial, anotacoes e marcadores; mecanicas e grafo executavel pertencem aos cartoes de implementacao."
+}
