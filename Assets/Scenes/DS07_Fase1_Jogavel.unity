@@ -1601,6 +1601,7 @@ GameObject:
   - component: {fileID: 891825268}
   - component: {fileID: 891825267}
   - component: {fileID: 891825266}
+  - component: {fileID: 891825270}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1615,7 +1616,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 891825265}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 46ebff278a4c16d3a8597b945ea1276c, type: 3}
   m_Name: 
@@ -1677,7 +1678,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.05
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -1705,13 +1706,27 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 891825265}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1305262, y: 0, z: 0, w: 0.9914449}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 2.5, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &891825270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891825265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc93ef4d29256944992f00ec499919cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Dreamscape.CameraSystem.FirstPersonCamera
+  target: {fileID: 1022897676}
+  sensitivity: 0.12
 --- !u!1 &901808713
 GameObject:
   m_ObjectHideFlags: 0
@@ -2554,6 +2569,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 5c963533d9ed23f9094893094800a23f, type: 3}
       propertyPath: m_Name
       value: Protagonist
+      objectReference: {fileID: 0}
+    - target: {fileID: 9002028887382611063, guid: 5c963533d9ed23f9094893094800a23f, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
