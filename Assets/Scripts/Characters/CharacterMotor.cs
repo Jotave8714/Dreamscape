@@ -125,6 +125,9 @@ namespace Dreamscape.Characters
 
         public void SetCrouch(bool crouch) => wantsCrouch = crouch;
 
+        public bool HasDoubleJump { get; set; }
+        private bool airJumpUsed;
+
         public void RequestJump() => jumpRequestedAt = Time.time;
 
         /// <summary>Move instantaneamente (checkpoints, cutscenes, Moema alcançando o jogador).</summary>
@@ -148,6 +151,8 @@ namespace Dreamscape.Characters
 
             IsGrounded = controller.isGrounded;
             if (IsGrounded)
+                airJumpUsed = false;
+            if (IsGrounded)
                 lastGroundedAt = Time.time;
 
             UpdateCrouch(dt);
@@ -159,6 +164,8 @@ namespace Dreamscape.Characters
                 verticalVelocity = 0f;
 
             IsGrounded = controller.isGrounded;
+            if (IsGrounded)
+                airJumpUsed = false;
             if (IsGrounded && !wasGrounded)
                 Landed?.Invoke();
             wasGrounded = IsGrounded;
@@ -186,6 +193,18 @@ namespace Dreamscape.Characters
             bool coyote = Time.time - lastGroundedAt <= coyoteTime;
             if (buffered && coyote && verticalVelocity <= 0.01f && !IsCrouching)
             {
+                verticalVelocity = Mathf.Sqrt(2f * jumpHeight * -gravity);
+                jumpRequestedAt = float.NegativeInfinity;
+                lastGroundedAt = float.NegativeInfinity;
+                if (hasJump)
+                    animator.SetTrigger(JumpHash);
+                Jumped?.Invoke();
+                return;
+            }
+
+            if (buffered && !IsGrounded && HasDoubleJump && !airJumpUsed && !IsCrouching)
+            {
+                airJumpUsed = true;
                 verticalVelocity = Mathf.Sqrt(2f * jumpHeight * -gravity);
                 jumpRequestedAt = float.NegativeInfinity;
                 lastGroundedAt = float.NegativeInfinity;
@@ -272,3 +291,4 @@ namespace Dreamscape.Characters
         }
     }
 }
+
