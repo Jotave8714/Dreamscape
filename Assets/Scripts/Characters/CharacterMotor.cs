@@ -72,6 +72,7 @@ namespace Dreamscape.Characters
         bool wasGrounded;
         int maxAirJumps;
         int airJumpsUsed;
+        float speedMultiplier = 1f;
 
         bool hasSpeed, hasMotionSpeed, hasGrounded, hasCrouch, hasVerticalSpeed, hasJump;
         readonly RaycastHit[] ceilingHits = new RaycastHit[8];
@@ -90,6 +91,8 @@ namespace Dreamscape.Characters
         public float SprintSpeed => sprintSpeed;
         /// <summary>Pulos permitidos no ar antes de tocar o chão (0 = sem power-up).</summary>
         public int MaxAirJumps => maxAirJumps;
+        /// <summary>Multiplicador de andar e correr (1 = sem power-up).</summary>
+        public float SpeedMultiplier => speedMultiplier;
         public CharacterController Controller => controller;
 
         void Awake()
@@ -136,6 +139,9 @@ namespace Dreamscape.Characters
 
         /// <summary>Define quantos pulos no ar são permitidos (power-up de pulo duplo = 1).</summary>
         public void SetMaxAirJumps(int count) => maxAirJumps = Mathf.Max(0, count);
+
+        /// <summary>Define o multiplicador de andar e correr (power-up de velocidade). Agachado não muda.</summary>
+        public void SetSpeedMultiplier(float multiplier) => speedMultiplier = Mathf.Max(0f, multiplier);
 
         /// <summary>Move instantaneamente (checkpoints, cutscenes, Moema alcançando o jogador).</summary>
         public void Teleport(Vector3 position, Quaternion rotation)
@@ -185,7 +191,7 @@ namespace Dreamscape.Characters
         {
             bool moving = moveInput.sqrMagnitude > 0.0001f;
             IsSprinting = wantsSprint && moving && !IsCrouching;
-            float maxSpeed = IsCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
+            float maxSpeed = IsCrouching ? crouchSpeed : (IsSprinting ? sprintSpeed : walkSpeed) * speedMultiplier;
             Vector3 target = moveInput * maxSpeed;
 
             float rate = target.sqrMagnitude >= horizontalVelocity.sqrMagnitude ? acceleration : deceleration;
@@ -290,8 +296,9 @@ namespace Dreamscape.Characters
             if (animator == null)
                 return;
             float speed = HorizontalSpeed;
+            float topSpeed = sprintSpeed * speedMultiplier;
             if (hasSpeed) animator.SetFloat(SpeedHash, speed, 0.1f, Time.deltaTime);
-            if (hasMotionSpeed) animator.SetFloat(MotionSpeedHash, sprintSpeed > 0f ? speed / sprintSpeed : 0f);
+            if (hasMotionSpeed) animator.SetFloat(MotionSpeedHash, topSpeed > 0f ? speed / topSpeed : 0f);
             if (hasGrounded) animator.SetBool(GroundedHash, IsGrounded);
             if (hasCrouch) animator.SetBool(CrouchHash, IsCrouching);
             if (hasVerticalSpeed) animator.SetFloat(VerticalSpeedHash, verticalVelocity);
