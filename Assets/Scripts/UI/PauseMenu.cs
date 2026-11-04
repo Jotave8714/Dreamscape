@@ -25,6 +25,7 @@ namespace Dreamscape.UI
         Button resumeButton;
         Button restartButton;
         Font font;
+        Text titleLabel, resumeLabel, restartLabel, menuLabel;
         PlayerInputController pausedPlayer;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -37,7 +38,7 @@ namespace Dreamscape.UI
 
         void Awake()
         {
-            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            font = Resources.Load<Font>("Fonts/PressStart2P");
             BuildUi();
             panel.SetActive(false);
         }
@@ -74,6 +75,7 @@ namespace Dreamscape.UI
 
             EnsureEventSystem();
             restartButton.interactable = SceneManager.GetActiveScene().buildIndex >= 0;
+            RefreshTexts();
             panel.SetActive(true);
             EventSystem.current.SetSelectedGameObject(resumeButton.gameObject);
         }
@@ -93,13 +95,22 @@ namespace Dreamscape.UI
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
         }
 
-        static void Quit()
+        void BackToMenu()
         {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
+            Close();
+            // cena de teste aberta direto, sem o menu no build
+            if (GameFlow.MenuAvailable)
+                GameFlow.ReturnToMenu();
+            else
+                GameFlow.Quit();
+        }
+
+        void RefreshTexts()
+        {
+            titleLabel.text = GameSettings.Text("PAUSADO", "PAUSED");
+            resumeLabel.text = GameSettings.Text("CONTINUAR", "RESUME");
+            restartLabel.text = GameSettings.Text("REINICIAR FASE", "RESTART LEVEL");
+            menuLabel.text = GameSettings.Text("MENU PRINCIPAL", "MAIN MENU");
         }
 
         void EnsureEventSystem()
@@ -135,18 +146,20 @@ namespace Dreamscape.UI
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
 
-            GameObject title = CreateLabel("Titulo", panel.transform, "PAUSADO", 72);
-            title.GetComponent<RectTransform>().sizeDelta = new Vector2(600f, 120f);
+            GameObject title = CreateLabel("Titulo", panel.transform, "", 64);
+            title.GetComponent<RectTransform>().sizeDelta = new Vector2(800f, 120f);
+            titleLabel = title.GetComponent<Text>();
 
-            resumeButton = CreateButton("Continuar", Close);
-            restartButton = CreateButton("Reiniciar fase", Restart);
-            CreateButton("Sair", Quit);
+            resumeButton = CreateButton("Continuar", Close, out resumeLabel);
+            restartButton = CreateButton("Reiniciar fase", Restart, out restartLabel);
+            CreateButton("Menu principal", BackToMenu, out menuLabel);
+            RefreshTexts();
         }
 
-        Button CreateButton(string text, UnityEngine.Events.UnityAction onClick)
+        Button CreateButton(string text, UnityEngine.Events.UnityAction onClick, out Text labelText)
         {
             GameObject go = CreateRect(text, panel.transform);
-            go.GetComponent<RectTransform>().sizeDelta = new Vector2(420f, 76f);
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(560f, 76f);
             go.AddComponent<Image>().color = Color.white;
 
             var button = go.AddComponent<Button>();
@@ -158,8 +171,9 @@ namespace Dreamscape.UI
             button.colors = colors;
             button.onClick.AddListener(onClick);
 
-            GameObject label = CreateLabel("Texto", go.transform, text, 36);
+            GameObject label = CreateLabel("Texto", go.transform, text, 26);
             Stretch(label.GetComponent<RectTransform>());
+            labelText = label.GetComponent<Text>();
             return button;
         }
 
