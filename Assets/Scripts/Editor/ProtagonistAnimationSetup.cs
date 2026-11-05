@@ -15,8 +15,6 @@ namespace Dreamscape.EditorTools
     {
         const string ModelPath = "Assets/Art/Characters/Protagonist/Protagonist.fbx";
         const string Folder = "Assets/Art/Characters/Protagonist/Animations/";
-        // Só existe sem skin; usa a T-pose do Run.fbx (mesmo esqueleto).
-        const string AvatarSource = "Run";
         const string ControllerPath = "Assets/Resources/ProtagonistAnimator.controller";
 
         // Velocidade (m/s) medida em cada animação; a reprodução é ajustada para os pés acompanharem o chão.
@@ -29,6 +27,9 @@ namespace Dreamscape.EditorTools
         const float BoostedWalkSpeed = 3.3f;
         const float RunSpeed = 5f;
         const float BoostedRunSpeed = 7.5f;
+
+        // A caminhada deixa os pés um pouco altos no nosso modelo; valor positivo (m) desce o corpo.
+        const float WalkHeightOffset = 0.02f;
 
         // Quadros do Jump.fbx (30 fps). O preparo antes de sair do chão fica de fora: no jogo o pulo é imediato.
         const float RiseStart = 15f, RiseEnd = 24f;
@@ -47,7 +48,7 @@ namespace Dreamscape.EditorTools
             model.SaveAndReimport();
 
             ImportLoop("Run", 0f);
-            ImportLoop("Walk", 0f);
+            ImportLoop("Walk", WalkHeightOffset);
             ImportLoop("Jog", 0f);
             ImportLoop("Idle", 0f);
             ImportJump();
@@ -102,15 +103,7 @@ namespace Dreamscape.EditorTools
         {
             var importer = (ModelImporter)AssetImporter.GetAtPath(Folder + file + ".fbx");
             importer.animationType = ModelImporterAnimationType.Human;
-            if (file == "Idle")
-            {
-                importer.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
-                importer.sourceAvatar = AssetDatabase.LoadAllAssetsAtPath(Folder + AvatarSource + ".fbx").OfType<Avatar>().First();
-            }
-            else
-            {
-                importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-            }
+            importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             importer.materialImportMode = ModelImporterMaterialImportMode.None; // só o movimento interessa, não o boneco
             return importer;
         }
