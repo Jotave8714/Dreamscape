@@ -102,8 +102,12 @@ namespace Dreamscape.Characters
             standCenter = controller.center;
             if (animator == null)
                 animator = GetComponentInChildren<Animator>();
-            CacheAnimatorParameters();
+            if (animator != null)
+                animator.applyRootMotion = false; // quem desloca o personagem é o motor
         }
+
+        // no Start, e não no Awake: o PlayerInputController pode atribuir o controller no Awake dele
+        void Start() => CacheAnimatorParameters();
 
         void OnValidate()
         {
