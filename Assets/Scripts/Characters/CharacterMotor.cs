@@ -25,6 +25,7 @@ namespace Dreamscape.Characters
         [SerializeField, Range(0f, 1f)] float airControl = 0.35f;
         [Tooltip("Velocidade de giro (graus/s).")]
         [SerializeField] float turnSpeed = 720f;
+        [SerializeField] bool rotateTowardsMovement = true;
 
         [Header("Pulo e gravidade")]
         [SerializeField] float jumpHeight = 1.1f;
@@ -137,6 +138,8 @@ namespace Dreamscape.Characters
 
         public void RequestJump() => jumpRequestedAt = Time.time;
 
+        public void ClearJumpRequest() => jumpRequestedAt = float.NegativeInfinity;
+
         /// <summary>Define quantos pulos no ar são permitidos (power-up de pulo duplo = 1).</summary>
         public void SetMaxAirJumps(int count) => maxAirJumps = Mathf.Max(0, count);
 
@@ -235,6 +238,8 @@ namespace Dreamscape.Characters
 
         void UpdateRotation(float dt)
         {
+            if (!rotateTowardsMovement)
+                return;
             Vector3 face = moveInput.sqrMagnitude > 0.0001f ? moveInput : lookDirection;
             if (face.sqrMagnitude < 0.0001f)
                 return;
