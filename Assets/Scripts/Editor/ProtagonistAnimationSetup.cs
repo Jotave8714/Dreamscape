@@ -17,15 +17,16 @@ namespace Dreamscape.EditorTools
 
         // Velocidade (m/s) medida em cada animação; a reprodução é ajustada para os pés acompanharem o chão.
         const float WalkClipSpeed = 1.54f;
-        const float RunClipSpeed = 2.90f;
-        const float SprintClipSpeed = 5.24f;
+        const float SlowRunClipSpeed = 2.90f;
+        const float FastRunClipSpeed = 5.24f;
 
         // Velocidades do CharacterMotor do protagonista, com e sem o power-up.
         const float WalkSpeed = 2.2f;
+        const float BoostedWalkSpeed = 3.3f;
         const float RunSpeed = 5f;
         const float BoostedRunSpeed = 7.5f;
 
-        // Corridas do Mixamo afundam os pés no nosso modelo; valor negativo (m) sobe o corpo para compensar.
+        // As corridas do Mixamo afundam os pés no nosso modelo; valor negativo (m) sobe o corpo para compensar.
         const float RunHeightOffset = -0.06f;
 
         // Quadros do Jumping.fbx (30 fps). O preparo antes de sair do chão fica de fora: no jogo o pulo é imediato.
@@ -104,13 +105,12 @@ namespace Dreamscape.EditorTools
             return importer;
         }
 
-        // Quem desloca o personagem é o CharacterMotor: as animações não podem andar nem girar sozinhas.
+        // Quem desloca o personagem é o CharacterMotor. O deslocamento horizontal e o giro ficam na raiz, que o motor
+        // ignora: gravados na pose, fariam o corpo escorregar para os lados, porque os clipes não correm em linha reta.
         static void BakeRoot(ModelImporterClipAnimation clip, bool bakeHeight)
         {
-            clip.lockRootRotation = true;
-            clip.keepOriginalOrientation = true;
-            clip.lockRootPositionXZ = true;
-            clip.keepOriginalPositionXZ = true;
+            clip.lockRootRotation = false;
+            clip.lockRootPositionXZ = false;
             clip.lockRootHeightY = bakeHeight;
             clip.keepOriginalPositionY = true;
         }
@@ -141,8 +141,10 @@ namespace Dreamscape.EditorTools
             {
                 Child(LoadClip("Idle", "Idle"), 0f, 1f),
                 Child(LoadClip("Walk", "Walk"), WalkSpeed, WalkSpeed / WalkClipSpeed),
-                Child(LoadClip("Slow Run", "Slow Run"), RunSpeed, RunSpeed / RunClipSpeed),
-                Child(LoadClip("Fast Run", "Fast Run"), BoostedRunSpeed, BoostedRunSpeed / SprintClipSpeed),
+                // cada velocidade usa a animação de ritmo natural mais próximo, para não parecer acelerada
+                Child(LoadClip("Slow Run", "Slow Run"), BoostedWalkSpeed, BoostedWalkSpeed / SlowRunClipSpeed),
+                Child(LoadClip("Fast Run", "Fast Run"), RunSpeed, RunSpeed / FastRunClipSpeed),
+                Child(LoadClip("Fast Run", "Fast Run"), BoostedRunSpeed, BoostedRunSpeed / FastRunClipSpeed),
             };
 
             AnimatorStateMachine machine = controller.layers[0].stateMachine;
