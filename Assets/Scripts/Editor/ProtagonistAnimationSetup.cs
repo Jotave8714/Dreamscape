@@ -26,8 +26,8 @@ namespace Dreamscape.EditorTools
         const float RunSpeed = 5f;
         const float BoostedRunSpeed = 7.5f;
 
-        // As corridas do Mixamo afundam os pés no nosso modelo; valor negativo (m) sobe o corpo para compensar.
-        const float RunHeightOffset = -0.06f;
+        // O Slow Run afunda os pés no nosso modelo; valor negativo (m) sobe o corpo para compensar.
+        const float SlowRunHeightOffset = -0.06f;
 
         // Quadros do Jumping.fbx (30 fps). O preparo antes de sair do chão fica de fora: no jogo o pulo é imediato.
         const float RiseStart = 15f, RiseEnd = 24f;
@@ -47,8 +47,8 @@ namespace Dreamscape.EditorTools
 
             ImportLoop("Idle", 0f);
             ImportLoop("Walk", 0f);
-            ImportLoop("Slow Run", RunHeightOffset);
-            ImportLoop("Fast Run", RunHeightOffset);
+            ImportLoop("Slow Run", SlowRunHeightOffset);
+            ImportLoop("Fast Run", 0f);
             ImportJump();
 
             BuildController();
