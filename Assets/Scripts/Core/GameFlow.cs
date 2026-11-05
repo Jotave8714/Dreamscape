@@ -1,4 +1,3 @@
-using System.IO;
 using Dreamscape.Characters;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -6,37 +5,64 @@ using UnityEngine.SceneManagement;
 namespace Dreamscape.Core
 {
     /// <summary>
-    /// Navegação entre o menu e as fases. A primeira fase é a primeira cena do build depois do menu, então adicionar
-    /// ou trocar fases só exige mexer nas cenas do build. Entrar numa fase com jogador salva o progresso.
+    /// Fluxo do protótipo: menu, duas fases e encerramento. O save guarda somente a fase atual.
     /// </summary>
     public static class GameFlow
     {
         public const string MenuScene = "MainMenu";
-        const string UnusedTemplateScene = "SampleScene"; // cena vazia do template da Unity
+        public const string FirstPhaseScene = "DS07_Fase1_Jogavel";
+        public const string SecondPhaseScene = "DS13_Fase2_Jogavel";
+        public const string EndingScene = "PrototypeEnding";
 
         public static bool HasSave => SavedSceneAvailable(out _);
-        public static bool CanStartNewGame => FirstPhase() != null;
+        public static bool CanStartNewGame => Application.CanStreamedLevelBeLoaded(FirstPhaseScene);
         public static bool MenuAvailable => Application.CanStreamedLevelBeLoaded(MenuScene);
 
         public static void NewGame()
         {
-            string first = FirstPhase();
-            if (first == null)
+            if (!CanStartNewGame)
             {
                 Debug.LogError("Dreamscape: nenhuma fase no build. Adicione as fases em Build Profiles.");
                 return;
             }
             SaveSystem.Delete();
-            SceneManager.LoadScene(first);
+            LoadScene(FirstPhaseScene);
         }
 
         public static void Continue()
         {
             if (SavedSceneAvailable(out string scene))
-                SceneManager.LoadScene(scene);
+                LoadScene(scene);
         }
 
-        public static void ReturnToMenu() => SceneManager.LoadScene(MenuScene);
+        public static void ReturnToMenu() => LoadScene(MenuScene);
+
+        public static bool CompletePhase(Scene phase)
+        {
+            if (GamePause.IsPaused || phase != SceneManager.GetActiveScene())
+                return false;
+
+            string next = phase.name == FirstPhaseScene ? SecondPhaseScene
+                : phase.name == SecondPhaseScene ? EndingScene : null;
+            if (next == null)
+                return false;
+            if (!Application.CanStreamedLevelBeLoaded(next))
+            {
+                Debug.LogError($"Dreamscape: adicione a cena {next} ao perfil de build.");
+                return false;
+            }
+
+            if (next == EndingScene)
+                SaveSystem.Delete();
+            LoadScene(next);
+            return true;
+        }
+
+        static void LoadScene(string scene)
+        {
+            GamePause.Resume();
+            SceneManager.LoadScene(scene, LoadSceneMode.Single);
+        }
 
         public static void Quit()
         {
@@ -50,20 +76,10 @@ namespace Dreamscape.Core
         static bool SavedSceneAvailable(out string scene)
         {
             scene = SaveSystem.LoadScene();
-            // o save pode apontar para uma fase que saiu do build numa versão nova do jogo
-            return scene != null && Application.CanStreamedLevelBeLoaded(scene);
+            return IsPhase(scene) && Application.CanStreamedLevelBeLoaded(scene);
         }
 
-        static string FirstPhase()
-        {
-            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
-            {
-                string name = Path.GetFileNameWithoutExtension(SceneUtility.GetScenePathByBuildIndex(i));
-                if (name != MenuScene && name != UnusedTemplateScene)
-                    return name;
-            }
-            return null;
-        }
+        static bool IsPhase(string scene) => scene == FirstPhaseScene || scene == SecondPhaseScene;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Install()
@@ -74,7 +90,7 @@ namespace Dreamscape.Core
 
         static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (mode == LoadSceneMode.Single && scene.buildIndex >= 0 && Object.FindAnyObjectByType<PlayerInputController>() != null)
+            if (mode == LoadSceneMode.Single && IsPhase(scene.name) && Object.FindAnyObjectByType<PlayerInputController>() != null)
                 SaveSystem.SaveScene(scene.name);
         }
     }
