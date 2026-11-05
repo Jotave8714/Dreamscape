@@ -14,8 +14,10 @@ namespace Dreamscape.EditorTools
     public static class ProtagonistAnimationSetup
     {
         const string ModelPath = "Assets/Art/Characters/Protagonist/Protagonist.fbx";
+        const string MoemaModelPath = "Assets/Art/Characters/Moema/Moema.fbx";
         const string Folder = "Assets/Art/Characters/Protagonist/Animations/";
         const string ControllerPath = "Assets/Resources/ProtagonistAnimator.controller";
+        const string MoemaControllerPath = "Assets/Resources/MoemaAnimator.controller";
 
         // Velocidade (m/s) medida em cada animação; a reprodução é ajustada para os pés acompanharem o chão.
         const float WalkClipSpeed = 1.66f;
@@ -27,6 +29,15 @@ namespace Dreamscape.EditorTools
         const float BoostedWalkSpeed = 3.3f;
         const float RunSpeed = 5f;
         const float BoostedRunSpeed = 7.5f;
+
+        // Velocidades da Moema no CharacterMotor. A perna dela é mais curta, então cada passada cobre menos chão
+        // (fração medida no jogo); sem compensar no ritmo, os pés deslizam.
+        const float MoemaWalkSpeed = 2.3f;
+        const float MoemaJogSpeed = 4f;
+        const float MoemaRunSpeed = 6.5f;
+        const float MoemaWalkStride = 0.87f;
+        const float MoemaJogStride = 0.82f;
+        const float MoemaRunStride = 0.79f;
 
         // A caminhada deixa os pés um pouco altos no nosso modelo; valor positivo (m) desce o corpo.
         const float WalkHeightOffset = 0.02f;
@@ -42,10 +53,8 @@ namespace Dreamscape.EditorTools
         [MenuItem("Dreamscape/Configurar animações do protagonista")]
         public static void Setup()
         {
-            var model = (ModelImporter)AssetImporter.GetAtPath(ModelPath);
-            model.animationType = ModelImporterAnimationType.Human;
-            model.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-            model.SaveAndReimport();
+            ImportCharacter(ModelPath);
+            ImportCharacter(MoemaModelPath);
 
             ImportLoop("Run", 0f);
             ImportLoop("Walk", WalkHeightOffset);
@@ -53,8 +62,31 @@ namespace Dreamscape.EditorTools
             ImportLoop("Idle", 0f);
             ImportJump();
 
-            BuildController();
+            BuildController(ControllerPath, new[]
+            {
+                Child(LoadClip("Idle", "Idle"), 0f, 1f),
+                Child(LoadClip("Walk", "Walk"), WalkSpeed, WalkSpeed / WalkClipSpeed),
+                // cada velocidade usa a animação de ritmo natural mais próximo, para não parecer acelerada
+                Child(LoadClip("Jog", "Jog"), BoostedWalkSpeed, BoostedWalkSpeed / JogClipSpeed),
+                Child(LoadClip("Run", "Run"), RunSpeed, RunSpeed / RunClipSpeed),
+                Child(LoadClip("Run", "Run"), BoostedRunSpeed, BoostedRunSpeed / RunClipSpeed),
+            });
+            BuildController(MoemaControllerPath, new[]
+            {
+                Child(LoadClip("Idle", "Idle"), 0f, 1f),
+                Child(LoadClip("Walk", "Walk"), MoemaWalkSpeed, MoemaWalkSpeed / (WalkClipSpeed * MoemaWalkStride)),
+                Child(LoadClip("Jog", "Jog"), MoemaJogSpeed, MoemaJogSpeed / (JogClipSpeed * MoemaJogStride)),
+                Child(LoadClip("Run", "Run"), MoemaRunSpeed, MoemaRunSpeed / (RunClipSpeed * MoemaRunStride)),
+            });
             Debug.Log("Dreamscape: animações do protagonista configuradas.");
+        }
+
+        static void ImportCharacter(string path)
+        {
+            var model = (ModelImporter)AssetImporter.GetAtPath(path);
+            model.animationType = ModelImporterAnimationType.Human;
+            model.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            model.SaveAndReimport();
         }
 
         static void ImportLoop(string file, float heightOffset)
@@ -121,13 +153,13 @@ namespace Dreamscape.EditorTools
         static AnimationClip LoadClip(string file, string name) =>
             AssetDatabase.LoadAllAssetsAtPath(Folder + file + ".fbx").OfType<AnimationClip>().First(c => c.name == name);
 
-        static void BuildController()
+        static void BuildController(string controllerPath, ChildMotion[] locomotionClips)
         {
             if (!AssetDatabase.IsValidFolder("Assets/Resources"))
                 AssetDatabase.CreateFolder("Assets", "Resources");
-            AssetDatabase.DeleteAsset(ControllerPath);
+            AssetDatabase.DeleteAsset(controllerPath);
 
-            AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
+            AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
             AnimatorState locomotion = controller.CreateBlendTreeInController("Locomotion", out BlendTree tree, 0);
             foreach (AnimatorControllerParameter stray in controller.parameters)
                 controller.RemoveParameter(stray); // a criação da blend tree adiciona um parâmetro próprio
@@ -140,15 +172,7 @@ namespace Dreamscape.EditorTools
             tree.blendType = BlendTreeType.Simple1D;
             tree.blendParameter = "Speed";
             tree.useAutomaticThresholds = false;
-            tree.children = new[]
-            {
-                Child(LoadClip("Idle", "Idle"), 0f, 1f),
-                Child(LoadClip("Walk", "Walk"), WalkSpeed, WalkSpeed / WalkClipSpeed),
-                // cada velocidade usa a animação de ritmo natural mais próximo, para não parecer acelerada
-                Child(LoadClip("Jog", "Jog"), BoostedWalkSpeed, BoostedWalkSpeed / JogClipSpeed),
-                Child(LoadClip("Run", "Run"), RunSpeed, RunSpeed / RunClipSpeed),
-                Child(LoadClip("Run", "Run"), BoostedRunSpeed, BoostedRunSpeed / RunClipSpeed),
-            };
+            tree.children = locomotionClips;
 
             AnimatorStateMachine machine = controller.layers[0].stateMachine;
             AnimatorState rise = machine.AddState("Jump Rise");
