@@ -17,6 +17,8 @@ namespace Dreamscape.Characters
         [SerializeField] string actionMap = "Player";
         [Tooltip("Vazio = Camera.main.")]
         [SerializeField] Transform cameraTransform;
+        [Tooltip("Vazio = Resources/ProtagonistAnimator.")]
+        [SerializeField] RuntimeAnimatorController animatorController;
 
         [Header("Preferências")]
         [Tooltip("Agachar alterna ao apertar (desligado = segurar).")]
@@ -35,6 +37,7 @@ namespace Dreamscape.Characters
         void Awake()
         {
             motor = GetComponent<CharacterMotor>();
+            AssignAnimatorController();
             InputActionAsset asset = actions != null ? actions : InputSystem.actions;
             if (asset == null)
             {
@@ -47,6 +50,17 @@ namespace Dreamscape.Characters
             sprint = map.FindAction("Sprint", true);
             crouch = map.FindAction("Crouch", true);
             jump = map.FindAction("Jump", true);
+        }
+
+        // feito aqui, e não na cena, para valer em todas as fases sem editar os arquivos .unity
+        void AssignAnimatorController()
+        {
+            Animator animator = GetComponentInChildren<Animator>();
+            if (animator == null || animator.runtimeAnimatorController != null)
+                return;
+            animator.runtimeAnimatorController = animatorController != null
+                ? animatorController
+                : Resources.Load<RuntimeAnimatorController>("ProtagonistAnimator");
         }
 
         void OnEnable()
