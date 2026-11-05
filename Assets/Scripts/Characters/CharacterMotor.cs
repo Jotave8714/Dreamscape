@@ -48,6 +48,8 @@ namespace Dreamscape.Characters
         [Tooltip("Vazio = procura nos filhos. Parâmetros usados se existirem no controller: " +
                  "Speed, MotionSpeed, Grounded, Crouch, VerticalSpeed, Jump (trigger).")]
         [SerializeField] Animator animator;
+        [Tooltip("Suavização da animação ao perder velocidade (s). Maior = transição mais longa de correndo para parado.")]
+        [SerializeField, Min(0f)] float stopAnimationDamp = 0.2f;
 
         static readonly int SpeedHash = Animator.StringToHash("Speed");
         static readonly int MotionSpeedHash = Animator.StringToHash("MotionSpeed");
@@ -301,7 +303,12 @@ namespace Dreamscape.Characters
                 return;
             float speed = HorizontalSpeed;
             float topSpeed = sprintSpeed * speedMultiplier;
-            if (hasSpeed) animator.SetFloat(SpeedHash, speed, 0.1f, Time.deltaTime);
+            if (hasSpeed)
+            {
+                // o motor para em menos de 0,2 s; a animação desacelera em mais tempo para não cortar da corrida para o parado
+                float damp = speed < animator.GetFloat(SpeedHash) ? stopAnimationDamp : 0.1f;
+                animator.SetFloat(SpeedHash, speed, damp, Time.deltaTime);
+            }
             if (hasMotionSpeed) animator.SetFloat(MotionSpeedHash, topSpeed > 0f ? speed / topSpeed : 0f);
             if (hasGrounded) animator.SetBool(GroundedHash, IsGrounded);
             if (hasCrouch) animator.SetBool(CrouchHash, IsCrouching);

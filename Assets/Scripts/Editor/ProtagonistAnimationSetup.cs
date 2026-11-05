@@ -8,17 +8,21 @@ namespace Dreamscape.EditorTools
     /// <summary>
     /// Menu "Dreamscape > Configurar animações do protagonista": configura o modelo e os FBX do Mixamo como Humanoid,
     /// corta o pulo em subida, queda e aterrissagem e gera o Animator Controller. Pode rodar de novo sem duplicar nada.
+    /// Os FBX precisam ser baixados com skin: sem ela não há T-pose, a referência vira o primeiro quadro da animação
+    /// e o joelho do nosso modelo chega cerca de 30° menos dobrado, chegando a inverter.
     /// </summary>
     public static class ProtagonistAnimationSetup
     {
         const string ModelPath = "Assets/Art/Characters/Protagonist/Protagonist.fbx";
         const string Folder = "Assets/Art/Characters/Protagonist/Animations/";
+        // Só existe sem skin; usa a T-pose do Run.fbx (mesmo esqueleto).
+        const string AvatarSource = "Run";
         const string ControllerPath = "Assets/Resources/ProtagonistAnimator.controller";
 
         // Velocidade (m/s) medida em cada animação; a reprodução é ajustada para os pés acompanharem o chão.
-        const float WalkClipSpeed = 1.54f;
-        const float SlowRunClipSpeed = 2.90f;
-        const float FastRunClipSpeed = 5.24f;
+        const float WalkClipSpeed = 1.66f;
+        const float JogClipSpeed = 2.87f;
+        const float RunClipSpeed = 5.48f;
 
         // Velocidades do CharacterMotor do protagonista, com e sem o power-up.
         const float WalkSpeed = 2.2f;
@@ -26,10 +30,7 @@ namespace Dreamscape.EditorTools
         const float RunSpeed = 5f;
         const float BoostedRunSpeed = 7.5f;
 
-        // O Slow Run afunda os pés no nosso modelo; valor negativo (m) sobe o corpo para compensar.
-        const float SlowRunHeightOffset = -0.06f;
-
-        // Quadros do Jumping.fbx (30 fps). O preparo antes de sair do chão fica de fora: no jogo o pulo é imediato.
+        // Quadros do Jump.fbx (30 fps). O preparo antes de sair do chão fica de fora: no jogo o pulo é imediato.
         const float RiseStart = 15f, RiseEnd = 24f;
         const float FallStart = 24f, FallEnd = 32f;
         const float LandStart = 33f, LandEnd = 52f;
@@ -45,10 +46,10 @@ namespace Dreamscape.EditorTools
             model.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             model.SaveAndReimport();
 
-            ImportLoop("Idle", 0f);
+            ImportLoop("Run", 0f);
             ImportLoop("Walk", 0f);
-            ImportLoop("Slow Run", SlowRunHeightOffset);
-            ImportLoop("Fast Run", 0f);
+            ImportLoop("Jog", 0f);
+            ImportLoop("Idle", 0f);
             ImportJump();
 
             BuildController();
@@ -70,7 +71,7 @@ namespace Dreamscape.EditorTools
 
         static void ImportJump()
         {
-            ModelImporter importer = HumanoidImporter("Jumping");
+            ModelImporter importer = HumanoidImporter("Jump");
             string take = importer.defaultClipAnimations[0].takeName;
             importer.clipAnimations = new[]
             {
@@ -101,7 +102,16 @@ namespace Dreamscape.EditorTools
         {
             var importer = (ModelImporter)AssetImporter.GetAtPath(Folder + file + ".fbx");
             importer.animationType = ModelImporterAnimationType.Human;
-            importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            if (file == "Idle")
+            {
+                importer.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
+                importer.sourceAvatar = AssetDatabase.LoadAllAssetsAtPath(Folder + AvatarSource + ".fbx").OfType<Avatar>().First();
+            }
+            else
+            {
+                importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            }
+            importer.materialImportMode = ModelImporterMaterialImportMode.None; // só o movimento interessa, não o boneco
             return importer;
         }
 
@@ -142,18 +152,18 @@ namespace Dreamscape.EditorTools
                 Child(LoadClip("Idle", "Idle"), 0f, 1f),
                 Child(LoadClip("Walk", "Walk"), WalkSpeed, WalkSpeed / WalkClipSpeed),
                 // cada velocidade usa a animação de ritmo natural mais próximo, para não parecer acelerada
-                Child(LoadClip("Slow Run", "Slow Run"), BoostedWalkSpeed, BoostedWalkSpeed / SlowRunClipSpeed),
-                Child(LoadClip("Fast Run", "Fast Run"), RunSpeed, RunSpeed / FastRunClipSpeed),
-                Child(LoadClip("Fast Run", "Fast Run"), BoostedRunSpeed, BoostedRunSpeed / FastRunClipSpeed),
+                Child(LoadClip("Jog", "Jog"), BoostedWalkSpeed, BoostedWalkSpeed / JogClipSpeed),
+                Child(LoadClip("Run", "Run"), RunSpeed, RunSpeed / RunClipSpeed),
+                Child(LoadClip("Run", "Run"), BoostedRunSpeed, BoostedRunSpeed / RunClipSpeed),
             };
 
             AnimatorStateMachine machine = controller.layers[0].stateMachine;
             AnimatorState rise = machine.AddState("Jump Rise");
-            rise.motion = LoadClip("Jumping", "Jump Rise");
+            rise.motion = LoadClip("Jump", "Jump Rise");
             AnimatorState fall = machine.AddState("Jump Fall");
-            fall.motion = LoadClip("Jumping", "Jump Fall");
+            fall.motion = LoadClip("Jump", "Jump Fall");
             AnimatorState land = machine.AddState("Jump Land");
-            land.motion = LoadClip("Jumping", "Jump Land");
+            land.motion = LoadClip("Jump", "Jump Land");
             machine.defaultState = locomotion;
 
             // o pulo duplo reinicia a subida, por isso a transição pode voltar para o próprio estado
