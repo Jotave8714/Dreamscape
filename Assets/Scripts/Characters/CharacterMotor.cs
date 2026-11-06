@@ -143,7 +143,7 @@ namespace Dreamscape.Characters
         /// <summary>Define o multiplicador de andar e correr (power-up de velocidade). Agachado não muda.</summary>
         public void SetSpeedMultiplier(float multiplier) => speedMultiplier = Mathf.Max(0f, multiplier);
 
-        /// <summary>Move instantaneamente (checkpoints, cutscenes, Moema alcançando o jogador).</summary>
+        /// <summary>Move instantaneamente e reinicia o estado do pulo, preservando os power-ups.</summary>
         public void Teleport(Vector3 position, Quaternion rotation)
         {
             controller.enabled = false;
@@ -151,6 +151,11 @@ namespace Dreamscape.Characters
             controller.enabled = true;
             horizontalVelocity = Vector3.zero;
             verticalVelocity = 0f;
+            jumpRequestedAt = float.NegativeInfinity;
+            lastGroundedAt = float.NegativeInfinity;
+            airJumpsUsed = 0;
+            IsGrounded = false;
+            wasGrounded = false;
             Physics.SyncTransforms();
         }
 
@@ -162,7 +167,6 @@ namespace Dreamscape.Characters
             if (dt <= 0f)
                 return;
 
-            IsGrounded = controller.isGrounded;
             if (IsGrounded)
             {
                 lastGroundedAt = Time.time;
