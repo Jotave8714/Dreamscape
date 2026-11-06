@@ -118,7 +118,7 @@ namespace Dreamscape.EditorTools
             Undo.CollapseUndoOperations(group);
         }
 
-        static void Sign(GameObject go, string text, Vector3 position, float characterSize = 0.045f)
+        internal static void Sign(GameObject go, string text, Vector3 position, float characterSize = 0.045f)
         {
             var label = go.GetComponent<TextMesh>();
             Undo.RecordObject(go.transform, "Pista DS-09");
