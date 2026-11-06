@@ -1,3 +1,4 @@
+using System;
 using Dreamscape.Characters;
 using Dreamscape.Core;
 using UnityEngine;
@@ -15,8 +16,11 @@ namespace Dreamscape.Phases
 
         public bool HasStarted { get; private set; }
         public bool HasCollapsed { get; private set; }
+        public bool HasCrossed { get; private set; }
         public float TimeRemaining { get; private set; }
         public float CollapseDelay => collapseDelay;
+        public event Action Collapsed;
+        public event Action Crossed;
 
         void Awake()
         {
@@ -44,6 +48,16 @@ namespace Dreamscape.Phases
             RefreshLabel();
         }
 
+        public bool CompleteCrossing()
+        {
+            if (!HasStarted || HasCollapsed || HasCrossed || GamePause.IsPaused)
+                return false;
+            HasCrossed = true;
+            RefreshLabel();
+            Crossed?.Invoke();
+            return true;
+        }
+
         void Update()
         {
             if (!HasStarted || HasCollapsed || GamePause.IsPaused)
@@ -55,6 +69,7 @@ namespace Dreamscape.Phases
                 HasCollapsed = true;
                 foreach (GameObject tile in floorTiles)
                     tile.SetActive(false);
+                Collapsed?.Invoke();
             }
             RefreshLabel();
         }
@@ -63,8 +78,10 @@ namespace Dreamscape.Phases
         {
             if (statusLabel == null)
                 return;
-            statusLabel.color = HasCollapsed ? Color.red : HasStarted ? Color.yellow : Color.white;
-            statusLabel.text = HasCollapsed
+            statusLabel.color = HasCrossed ? Color.green : HasCollapsed ? Color.red : HasStarted ? Color.yellow : Color.white;
+            statusLabel.text = HasCrossed
+                ? "TRAVESSIA CONCLUIDA\nSIGA ATE A SAIDA"
+                : HasCollapsed
                 ? "PISO CEDEU\nESC: REINICIAR FASE"
                 : HasStarted
                     ? $"CORRA!\n{TimeRemaining:0.0} s"
