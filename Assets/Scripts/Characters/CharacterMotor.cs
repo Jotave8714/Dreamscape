@@ -76,6 +76,7 @@ namespace Dreamscape.Characters
         int maxAirJumps;
         int airJumpsUsed;
         float speedMultiplier = 1f;
+        float gravityScale = 1f;
 
         bool hasSpeed, hasMotionSpeed, hasGrounded, hasCrouch, hasVerticalSpeed, hasJump;
         readonly RaycastHit[] ceilingHits = new RaycastHit[8];
@@ -94,6 +95,7 @@ namespace Dreamscape.Characters
         public float SprintSpeed => sprintSpeed;
         /// <summary>Pulos permitidos no ar antes de tocar o chão (0 = sem power-up).</summary>
         public int MaxAirJumps => maxAirJumps;
+        public float GravityScale => gravityScale;
         /// <summary>Multiplicador de andar e correr (1 = sem power-up).</summary>
         public float SpeedMultiplier => speedMultiplier;
         public CharacterController Controller => controller;
@@ -151,6 +153,9 @@ namespace Dreamscape.Characters
 
         /// <summary>Define o multiplicador de andar e correr (power-up de velocidade). Agachado não muda.</summary>
         public void SetSpeedMultiplier(float multiplier) => speedMultiplier = Mathf.Max(0f, multiplier);
+
+        /// <summary>Escala a gravidade da queda (power-up Pluma). O impulso do pulo não muda, então o salto fica mais longo.</summary>
+        public void SetGravityScale(float scale) => gravityScale = Mathf.Clamp(scale, 0.1f, 1f);
 
         /// <summary>Move instantaneamente (checkpoints, cutscenes, Moema alcançando o jogador).</summary>
         public void Teleport(Vector3 position, Quaternion rotation)
@@ -232,7 +237,7 @@ namespace Dreamscape.Characters
             if (IsGrounded && verticalVelocity < 0f)
                 verticalVelocity = -2f; // mantém colado em rampas e degraus
             else
-                verticalVelocity = Mathf.Max(verticalVelocity + gravity * dt, -maxFallSpeed);
+                verticalVelocity = Mathf.Max(verticalVelocity + gravity * gravityScale * dt, -maxFallSpeed);
         }
 
         void StartJump(float height)
