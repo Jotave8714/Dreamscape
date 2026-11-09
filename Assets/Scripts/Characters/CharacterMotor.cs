@@ -196,7 +196,9 @@ namespace Dreamscape.Characters
         void UpdateHorizontal(float dt)
         {
             bool moving = moveInput.sqrMagnitude > 0.0001f;
-            IsSprinting = wantsSprint && moving && !IsCrouching;
+            // no ar o sprint não muda: segurar Shift pulando não acelera, só vale quem já corria ao sair do chão
+            bool sprintState = IsGrounded ? wantsSprint : IsSprinting;
+            IsSprinting = sprintState && moving && !IsCrouching;
             float maxSpeed = IsCrouching ? crouchSpeed : (IsSprinting ? sprintSpeed : walkSpeed) * speedMultiplier;
             Vector3 target = moveInput * maxSpeed;
 
