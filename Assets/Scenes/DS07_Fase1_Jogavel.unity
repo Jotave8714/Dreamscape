@@ -349,6 +349,7 @@ GameObject:
   - component: {fileID: 118432840}
   - component: {fileID: 118432839}
   - component: {fileID: 118432838}
+  - component: {fileID: 118432841}
   m_Layer: 0
   m_Name: 'N1 - Coletavel pulo duplo [DS10]'
   m_TagString: Untagged
@@ -435,7 +436,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -449,6 +450,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 118432836}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &118432841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 118432836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c79ae1bb837492de65eddf9067321d2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Dreamscape.Runtime::Dreamscape.PowerUps.DoubleJumpPickup
 --- !u!1 &177091666
 GameObject:
   m_ObjectHideFlags: 0
@@ -2248,6 +2261,7 @@ MonoBehaviour:
   maxFallSpeed: 40
   coyoteTime: 0.12
   jumpBuffer: 0.15
+  airJumpHeight: 1.1
   crouchHeightFactor: 0.6
   crouchTransitionSpeed: 4
   ceilingMask:
@@ -2843,6 +2857,139 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1193255948}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1227498797
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1227498799}
+  - component: {fileID: 1227498798}
+  m_Layer: 0
+  m_Name: DS14 - Grafo da Fase 1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1227498798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1227498797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7a15aecfef3456e818c6a17a833c94f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Dreamscape.Runtime::Dreamscape.Routes.PhaseRouteGraph
+  points:
+  - id: N0
+    marker: {fileID: 830151266}
+    floor: {fileID: 1782946810}
+    safe: 1
+    pickup: {fileID: 0}
+  - id: N1
+    marker: {fileID: 1568844905}
+    floor: {fileID: 1782946810}
+    safe: 1
+    pickup: {fileID: 118432841}
+  - id: N2
+    marker: {fileID: 246487380}
+    floor: {fileID: 694285355}
+    safe: 1
+    pickup: {fileID: 0}
+  - id: T0
+    marker: {fileID: 371266934}
+    floor: {fileID: 1193255951}
+    safe: 0
+    pickup: {fileID: 0}
+  - id: N3
+    marker: {fileID: 1886822577}
+    floor: {fileID: 552433}
+    safe: 1
+    pickup: {fileID: 0}
+  - id: N4
+    marker: {fileID: 1100328962}
+    floor: {fileID: 1796255762}
+    safe: 1
+    pickup: {fileID: 0}
+  - id: N5
+    marker: {fileID: 1593936938}
+    floor: {fileID: 997072207}
+    safe: 1
+    pickup: {fileID: 0}
+  - id: N6
+    marker: {fileID: 713725540}
+    floor: {fileID: 214981802}
+    safe: 1
+    pickup: {fileID: 0}
+  - id: N7
+    marker: {fileID: 901808714}
+    floor: {fileID: 214981802}
+    safe: 1
+    pickup: {fileID: 0}
+  connections:
+  - from: 0
+    to: 1
+    requiresDoubleJump: 0
+    blocked: 0
+  - from: 1
+    to: 0
+    requiresDoubleJump: 0
+    blocked: 0
+  - from: 0
+    to: 4
+    requiresDoubleJump: 0
+    blocked: 0
+  - from: 1
+    to: 4
+    requiresDoubleJump: 0
+    blocked: 0
+  - from: 0
+    to: 2
+    requiresDoubleJump: 0
+    blocked: 0
+  - from: 2
+    to: 3
+    requiresDoubleJump: 0
+    blocked: 0
+  - from: 4
+    to: 5
+    requiresDoubleJump: 1
+    blocked: 0
+  - from: 5
+    to: 6
+    requiresDoubleJump: 0
+    blocked: 0
+  - from: 6
+    to: 7
+    requiresDoubleJump: 0
+    blocked: 0
+  - from: 7
+    to: 8
+    requiresDoubleJump: 0
+    blocked: 0
+  start: 0
+  goal: 8
+--- !u!4 &1227498799
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1227498797}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1460904368
 GameObject:
   m_ObjectHideFlags: 0
@@ -3364,6 +3511,7 @@ MonoBehaviour:
   maxFallSpeed: 40
   coyoteTime: 0.12
   jumpBuffer: 0.15
+  airJumpHeight: 1.1
   crouchHeightFactor: 0.6
   crouchTransitionSpeed: 4
   ceilingMask:
@@ -4166,3 +4314,4 @@ SceneRoots:
   - {fileID: 1022897673}
   - {fileID: 1662808073}
   - {fileID: 891825269}
+  - {fileID: 1227498799}
