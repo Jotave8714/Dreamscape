@@ -155,6 +155,7 @@ namespace Dreamscape.Characters
                 return;
             motor.SetMoveInput(Vector3.zero);
             motor.SetSprint(false);
+            motor.ClearJumpRequest();
         }
     }
 }
