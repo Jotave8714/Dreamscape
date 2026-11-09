@@ -28,6 +28,10 @@ namespace Dreamscape.Characters
         [Tooltip("Posição de chegada do teleporte, no espaço local do alvo (atrás e ao lado).")]
         [SerializeField] Vector3 teleportOffset = new Vector3(1.2f, 0f, -1.5f);
 
+        [Header("Animação")]
+        [Tooltip("Vazio = Resources/MoemaAnimator.")]
+        [SerializeField] RuntimeAnimatorController animatorController;
+
         [Header("Comportamento")]
         [SerializeField] bool mirrorCrouch = true;
         [SerializeField] bool mirrorJump = true;
@@ -60,7 +64,20 @@ namespace Dreamscape.Characters
         {
             motor = GetComponent<CharacterMotor>();
             path = new NavMeshPath();
+            SetUpVisuals();
             lastPosition = transform.position;
+        }
+
+        // feito aqui, e não na cena, para valer em todas as fases sem editar os arquivos .unity
+        void SetUpVisuals()
+        {
+            Animator animator = GetComponentInChildren<Animator>();
+            if (animator != null && animator.runtimeAnimatorController == null)
+                animator.runtimeAnimatorController = animatorController != null
+                    ? animatorController
+                    : Resources.Load<RuntimeAnimatorController>("MoemaAnimator");
+            if (!TryGetComponent<HairSpring>(out _))
+                gameObject.AddComponent<HairSpring>();
         }
 
         void OnEnable() => Subscribe();
