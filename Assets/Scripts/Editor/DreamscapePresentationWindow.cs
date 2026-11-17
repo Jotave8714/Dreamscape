@@ -15,6 +15,9 @@ public sealed class DreamscapePresentationWindow : EditorWindow
         EditorGUILayout.LabelField("Dreamscape", EditorStyles.boldLabel);
         using (new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode))
         {
+            if (GUILayout.Button("Jogar apresentação de cinco fases"))
+                OpenScene("Dreamscape_CincoFases");
+
             if (GUILayout.Button("Rascunhos das fases 1 e 2"))
                 OpenScene("Apresentacao_DuasFases");
 
@@ -31,3 +34,4 @@ public sealed class DreamscapePresentationWindow : EditorWindow
             EditorSceneManager.OpenScene($"Assets/Scenes/{sceneName}.unity");
     }
 }
+
