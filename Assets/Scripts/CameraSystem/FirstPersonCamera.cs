@@ -1,60 +1,96 @@
+using Dreamscape.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Dreamscape.CameraSystem
 {
     [RequireComponent(typeof(Camera))]
+    [DefaultExecutionOrder(-100)]
+    [DisallowMultipleComponent]
     public sealed class FirstPersonCamera : MonoBehaviour
     {
-        [SerializeField] private CharacterController target;
-        [SerializeField] private float sensitivity = 0.12f;
-        private float yaw;
-        private float pitch;
+        [UnityEngine.Serialization.FormerlySerializedAs("target")]
+        [SerializeField] CharacterController character;
+        [SerializeField] Vector2 mouseSensitivity = new Vector2(0.12f, 0.1f);
+        [SerializeField] Vector2 stickSensitivity = new Vector2(180f, 120f);
+        [SerializeField, Range(0.05f, 0.3f)] float eyeInset = 0.12f;
+        [SerializeField, Range(1f, 89f)] float pitchLimit = 85f;
 
-        public void ResetView() { yaw = 0f; pitch = 0f; transform.rotation = Quaternion.identity; }
+        InputAction look;
+        float yaw;
+        float pitch;
+        bool wasPaused;
 
-        private void OnEnable()
+        public void ResetView()
         {
+            yaw = pitch = 0f;
+            transform.rotation = Quaternion.identity;
+        }
+
+        void Awake()
+        {
+            if (character == null)
+                character = GetComponentInParent<CharacterController>();
+            look = InputSystem.actions?.FindAction("Player/Look", true);
             yaw = transform.eulerAngles.y;
-            CaptureCursor();
         }
 
-        private void OnDisable()
+        void OnEnable()
         {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            look?.Enable();
+            SetCursorLocked(!GamePause.IsPaused);
         }
 
-        private void LateUpdate()
+        void OnDisable() => SetCursorLocked(false);
+
+        void Update()
         {
-            if (!target)
+            if (GamePause.IsPaused)
+            {
+                wasPaused = true;
+                SetCursorLocked(false);
+                return;
+            }
+            if (wasPaused)
+            {
+                wasPaused = false;
+                SetCursorLocked(true);
+                return;
+            }
+            if (look == null || Time.deltaTime <= 0f)
                 return;
 
-            if (Keyboard.current?.escapeKey.wasPressedThisFrame == true)
+            bool pointer = look.activeControl?.device is Pointer;
+            if (pointer && Cursor.lockState != CursorLockMode.Locked)
             {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
-            else if (Mouse.current?.leftButton.wasPressedThisFrame == true)
-            {
-                CaptureCursor();
+                if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                    SetCursorLocked(true);
+                return;
             }
 
-            if (Cursor.lockState == CursorLockMode.Locked && Mouse.current != null && Time.timeScale > 0f)
-            {
-                Vector2 look = Mouse.current.delta.ReadValue() * sensitivity;
-                yaw += look.x;
-                pitch = Mathf.Clamp(pitch - look.y, -85f, 85f);
-            }
-
-            Vector3 eye = target.center + Vector3.up * (target.height * 0.5f - 0.12f);
-            transform.SetPositionAndRotation(target.transform.TransformPoint(eye), Quaternion.Euler(pitch, yaw, 0f));
+            Vector2 delta = look.ReadValue<Vector2>();
+            Vector2 step = pointer
+                ? Vector2.Scale(delta, mouseSensitivity)
+                : Vector2.Scale(delta, stickSensitivity) * Time.deltaTime;
+            yaw += step.x;
+            pitch = Mathf.Clamp(pitch - step.y, -pitchLimit, pitchLimit);
+            transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
         }
 
-        private static void CaptureCursor()
+        void LateUpdate()
         {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            if (character == null)
+                return;
+            Vector3 eye = character.center + Vector3.up * (character.height * 0.5f - eyeInset);
+            transform.position = character.transform.TransformPoint(eye);
+            // O motor gira o corpo ao andar; a direção da visão permanece independente.
+            transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
+        }
+
+        static void SetCursorLocked(bool value)
+        {
+            Cursor.lockState = value ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !value;
         }
     }
 }

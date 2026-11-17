@@ -25,6 +25,7 @@ namespace Dreamscape.Characters
         [SerializeField, Range(0f, 1f)] float airControl = 0.35f;
         [Tooltip("Velocidade de giro (graus/s).")]
         [SerializeField] float turnSpeed = 720f;
+        [SerializeField] bool rotateTowardsMovement = true;
 
         [Header("Pulo e gravidade")]
         [SerializeField] float jumpHeight = 1.1f;
@@ -34,6 +35,8 @@ namespace Dreamscape.Characters
         [SerializeField] float coyoteTime = 0.12f;
         [Tooltip("Pulo apertado pouco antes de tocar o chão ainda vale (s).")]
         [SerializeField] float jumpBuffer = 0.15f;
+        [Tooltip("Altura do pulo no ar (power-up de pulo duplo).")]
+        [SerializeField] float airJumpHeight = 1.1f;
 
         [Header("Agachar")]
         [SerializeField, Range(0.3f, 1f)] float crouchHeightFactor = 0.6f;
@@ -46,6 +49,8 @@ namespace Dreamscape.Characters
         [Tooltip("Vazio = procura nos filhos. Parâmetros usados se existirem no controller: " +
                  "Speed, MotionSpeed, Grounded, Crouch, VerticalSpeed, Jump (trigger).")]
         [SerializeField] Animator animator;
+        [Tooltip("Suavização da animação ao perder velocidade (s). Maior = transição mais longa de correndo para parado.")]
+        [SerializeField, Min(0f)] float stopAnimationDamp = 0.2f;
 
         static readonly int SpeedHash = Animator.StringToHash("Speed");
         static readonly int MotionSpeedHash = Animator.StringToHash("MotionSpeed");
@@ -68,6 +73,9 @@ namespace Dreamscape.Characters
         Vector3 horizontalVelocity;
         float verticalVelocity;
         bool wasGrounded;
+        int maxAirJumps;
+        int airJumpsUsed;
+        float speedMultiplier = 1f;
 
         bool hasSpeed, hasMotionSpeed, hasGrounded, hasCrouch, hasVerticalSpeed, hasJump;
         readonly RaycastHit[] ceilingHits = new RaycastHit[8];
@@ -84,6 +92,10 @@ namespace Dreamscape.Characters
         public float HorizontalSpeed => horizontalVelocity.magnitude;
         public float WalkSpeed => walkSpeed;
         public float SprintSpeed => sprintSpeed;
+        /// <summary>Pulos permitidos no ar antes de tocar o chão (0 = sem power-up).</summary>
+        public int MaxAirJumps => maxAirJumps;
+        /// <summary>Multiplicador de andar e correr (1 = sem power-up).</summary>
+        public float SpeedMultiplier => speedMultiplier;
         public CharacterController Controller => controller;
 
         void Awake()
@@ -93,8 +105,12 @@ namespace Dreamscape.Characters
             standCenter = controller.center;
             if (animator == null)
                 animator = GetComponentInChildren<Animator>();
-            CacheAnimatorParameters();
+            if (animator != null)
+                animator.applyRootMotion = false; // quem desloca o personagem é o motor
         }
+
+        // no Start, e não no Awake: o PlayerInputController pode atribuir o controller no Awake dele
+        void Start() => CacheAnimatorParameters();
 
         void OnValidate()
         {
@@ -102,6 +118,7 @@ namespace Dreamscape.Characters
             sprintSpeed = Mathf.Max(walkSpeed, sprintSpeed);
             crouchSpeed = Mathf.Clamp(crouchSpeed, 0f, walkSpeed);
             jumpHeight = Mathf.Max(0f, jumpHeight);
+            airJumpHeight = Mathf.Max(0f, airJumpHeight);
             gravity = Mathf.Min(-0.01f, gravity);
         }
 
@@ -125,10 +142,21 @@ namespace Dreamscape.Characters
 
         public void SetCrouch(bool crouch) => wantsCrouch = crouch;
 
-        public bool HasDoubleJump { get; set; }
-        private bool airJumpUsed;
-
         public void RequestJump() => jumpRequestedAt = Time.time;
+
+        public void ClearJumpRequest() => jumpRequestedAt = float.NegativeInfinity;
+
+        /// <summary>Define quantos pulos no ar são permitidos (power-up de pulo duplo = 1).</summary>
+        public bool HasDoubleJump
+        {
+            get => maxAirJumps > 0;
+            set => SetMaxAirJumps(value ? 1 : 0);
+        }
+
+        public void SetMaxAirJumps(int count) => maxAirJumps = Mathf.Max(0, count);
+
+        /// <summary>Define o multiplicador de andar e correr (power-up de velocidade). Agachado não muda.</summary>
+        public void SetSpeedMultiplier(float multiplier) => speedMultiplier = Mathf.Max(0f, multiplier);
 
         /// <summary>Move instantaneamente (checkpoints, cutscenes, Moema alcançando o jogador).</summary>
         public void Teleport(Vector3 position, Quaternion rotation)
@@ -151,9 +179,11 @@ namespace Dreamscape.Characters
 
             IsGrounded = controller.isGrounded;
             if (IsGrounded)
-                airJumpUsed = false;
-            if (IsGrounded)
+            {
                 lastGroundedAt = Time.time;
+                if (verticalVelocity <= 0f)
+                    airJumpsUsed = 0;
+            }
 
             UpdateCrouch(dt);
             UpdateHorizontal(dt);
@@ -164,8 +194,6 @@ namespace Dreamscape.Characters
                 verticalVelocity = 0f;
 
             IsGrounded = controller.isGrounded;
-            if (IsGrounded)
-                airJumpUsed = false;
             if (IsGrounded && !wasGrounded)
                 Landed?.Invoke();
             wasGrounded = IsGrounded;
@@ -177,8 +205,10 @@ namespace Dreamscape.Characters
         void UpdateHorizontal(float dt)
         {
             bool moving = moveInput.sqrMagnitude > 0.0001f;
-            IsSprinting = wantsSprint && moving && !IsCrouching;
-            float maxSpeed = IsCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
+            // no ar o sprint não muda: segurar Shift pulando não acelera, só vale quem já corria ao sair do chão
+            bool sprintState = IsGrounded ? wantsSprint : IsSprinting;
+            IsSprinting = sprintState && moving && !IsCrouching;
+            float maxSpeed = IsCrouching ? crouchSpeed : (IsSprinting ? sprintSpeed : walkSpeed) * speedMultiplier;
             Vector3 target = moveInput * maxSpeed;
 
             float rate = target.sqrMagnitude >= horizontalVelocity.sqrMagnitude ? acceleration : deceleration;
@@ -193,24 +223,15 @@ namespace Dreamscape.Characters
             bool coyote = Time.time - lastGroundedAt <= coyoteTime;
             if (buffered && coyote && verticalVelocity <= 0.01f && !IsCrouching)
             {
-                verticalVelocity = Mathf.Sqrt(2f * jumpHeight * -gravity);
-                jumpRequestedAt = float.NegativeInfinity;
+                StartJump(jumpHeight);
                 lastGroundedAt = float.NegativeInfinity;
-                if (hasJump)
-                    animator.SetTrigger(JumpHash);
-                Jumped?.Invoke();
                 return;
             }
 
-            if (buffered && !IsGrounded && HasDoubleJump && !airJumpUsed && !IsCrouching)
+            if (buffered && !coyote && !IsGrounded && !IsCrouching && airJumpsUsed < maxAirJumps)
             {
-                airJumpUsed = true;
-                verticalVelocity = Mathf.Sqrt(2f * jumpHeight * -gravity);
-                jumpRequestedAt = float.NegativeInfinity;
-                lastGroundedAt = float.NegativeInfinity;
-                if (hasJump)
-                    animator.SetTrigger(JumpHash);
-                Jumped?.Invoke();
+                airJumpsUsed++;
+                StartJump(airJumpHeight);
                 return;
             }
 
@@ -220,8 +241,19 @@ namespace Dreamscape.Characters
                 verticalVelocity = Mathf.Max(verticalVelocity + gravity * dt, -maxFallSpeed);
         }
 
+        void StartJump(float height)
+        {
+            verticalVelocity = Mathf.Sqrt(2f * height * -gravity);
+            jumpRequestedAt = float.NegativeInfinity;
+            if (hasJump)
+                animator.SetTrigger(JumpHash);
+            Jumped?.Invoke();
+        }
+
         void UpdateRotation(float dt)
         {
+            if (!rotateTowardsMovement)
+                return;
             Vector3 face = moveInput.sqrMagnitude > 0.0001f ? moveInput : lookDirection;
             if (face.sqrMagnitude < 0.0001f)
                 return;
@@ -283,12 +315,17 @@ namespace Dreamscape.Characters
             if (animator == null)
                 return;
             float speed = HorizontalSpeed;
-            if (hasSpeed) animator.SetFloat(SpeedHash, speed, 0.1f, Time.deltaTime);
-            if (hasMotionSpeed) animator.SetFloat(MotionSpeedHash, sprintSpeed > 0f ? speed / sprintSpeed : 0f);
+            float topSpeed = sprintSpeed * speedMultiplier;
+            if (hasSpeed)
+            {
+                // o motor para em menos de 0,2 s; a animação desacelera em mais tempo para não cortar da corrida para o parado
+                float damp = speed < animator.GetFloat(SpeedHash) ? stopAnimationDamp : 0.1f;
+                animator.SetFloat(SpeedHash, speed, damp, Time.deltaTime);
+            }
+            if (hasMotionSpeed) animator.SetFloat(MotionSpeedHash, topSpeed > 0f ? speed / topSpeed : 0f);
             if (hasGrounded) animator.SetBool(GroundedHash, IsGrounded);
             if (hasCrouch) animator.SetBool(CrouchHash, IsCrouching);
             if (hasVerticalSpeed) animator.SetFloat(VerticalSpeedHash, verticalVelocity);
         }
     }
 }
-

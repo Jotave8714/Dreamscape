@@ -1,0 +1,6 @@
+{
+    "name": "Dreamscape.Editor",
+    "rootNamespace": "Dreamscape.EditorTools",
+    "references": ["Dreamscape.Runtime", "Unity.InputSystem"],
+    "includePlatforms": ["Editor"]
+}

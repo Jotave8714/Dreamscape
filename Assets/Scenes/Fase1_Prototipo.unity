@@ -5503,7 +5503,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 891825265}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc93ef4d29256944992f00ec499919cb, type: 3}
+  m_Script: {fileID: 11500000, guid: 69aea6e01aa9141e3a4d7701225fe1aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Dreamscape.CameraSystem.FirstPersonCamera
   target: {fileID: 1022897676}

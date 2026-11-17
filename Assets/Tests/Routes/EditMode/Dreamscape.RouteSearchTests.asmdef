@@ -1,0 +1,6 @@
+{
+    "name": "Dreamscape.RouteSearchTests",
+    "references": ["Dreamscape.Runtime"],
+    "includePlatforms": ["Editor"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}

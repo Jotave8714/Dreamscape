@@ -1,4 +1,5 @@
 using Dreamscape.Characters;
+using Dreamscape.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -43,6 +44,7 @@ namespace Dreamscape.CameraSystem
         float pitch = 15f;
         float currentDistance;
         Vector3 pivot;
+        bool wasPaused;
         readonly RaycastHit[] hits = new RaycastHit[16];
 
         void Awake()
@@ -147,6 +149,19 @@ namespace Dreamscape.CameraSystem
         {
             if (!lockCursor)
                 return;
+            if (GamePause.IsPaused)
+            {
+                // cursor solto para o menu; o clique nos botões não pode recapturar
+                wasPaused = true;
+                SetCursorLocked(false);
+                return;
+            }
+            if (wasPaused)
+            {
+                wasPaused = false;
+                SetCursorLocked(true);
+                return;
+            }
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
                 SetCursorLocked(false);
             else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame &&
