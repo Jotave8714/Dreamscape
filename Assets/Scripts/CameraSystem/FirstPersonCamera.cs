@@ -11,6 +11,8 @@ namespace Dreamscape.CameraSystem
         private float yaw;
         private float pitch;
 
+        public void ResetView() { yaw = 0f; pitch = 0f; transform.rotation = Quaternion.identity; }
+
         private void OnEnable()
         {
             yaw = transform.eulerAngles.y;

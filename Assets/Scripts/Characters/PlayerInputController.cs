@@ -135,6 +135,12 @@ namespace Dreamscape.Characters
                 sprintToggled = !sprintToggled;
         }
 
+        public void ResetControls()
+        {
+            crouchToggled = false; sprintToggled = false;
+            if (motor != null) { motor.SetCrouch(false); motor.SetSprint(false); motor.SetMoveInput(Vector3.zero); }
+        }
+
         void StopMotor()
         {
             if (motor == null)
