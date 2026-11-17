@@ -17,7 +17,7 @@ namespace Dreamscape.EditorTools
             Undo.SetCurrentGroupName("Configurar power-ups");
             int group = Undo.GetCurrentGroup();
 
-            int count = Bind<DoubleJumpPickup>("[DS10]") + Bind<SpeedPickup>("[DS11]");
+            int count = Bind<Dreamscape.PowerUps.DoubleJumpPickup>("[DS10]") + Bind<SpeedPickup>("[DS11]");
 
             Undo.CollapseUndoOperations(group);
             Debug.Log($"Dreamscape: {count} coletável(is) de power-up configurado(s). Salve a cena para manter.");
@@ -42,3 +42,4 @@ namespace Dreamscape.EditorTools
         }
     }
 }
+
