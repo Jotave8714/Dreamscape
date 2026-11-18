@@ -2773,6 +2773,7 @@ GameObject:
   - component: {fileID: 1392780198}
   - component: {fileID: 1392780197}
   - component: {fileID: 1392780196}
+  - component: {fileID: 1392780201}
   m_Layer: 0
   m_Name: 'Portal de conclusao [DS13]'
   m_TagString: Untagged
@@ -2859,7 +2860,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -4310,6 +4311,19 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1392780201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1392780194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d04d2e75ecdb4fc2ad5f14054ec6d39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Dreamscape.Runtime::Dreamscape.PhaseGoal
+  nextScene: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1,17 +1,17 @@
 using Dreamscape.Characters;
 using Dreamscape.Core;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Dreamscape
 {
     /// <summary>
-    /// Porta de conclusão: ao ser tocada pelo jogador carrega a próxima fase do build ou, se não houver, volta ao menu.
+    /// Porta de conclusão: ao ser tocada pelo jogador conclui a fase (<see cref="GameFlow.CompletePhase"/>), carregando
+    /// a próxima fase do build ou, depois da última, o encerramento. A Moema não aciona a porta e a pausa a bloqueia.
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public sealed class PhaseGoal : MonoBehaviour
     {
-        [Tooltip("Nome da cena seguinte. Vazio = a próxima cena do build; sem próxima, volta ao menu.")]
+        [Tooltip("Nome da cena seguinte. Vazio = a próxima cena do build; sem próxima, o encerramento.")]
         [SerializeField] string nextScene;
 
         bool used;
@@ -24,19 +24,7 @@ namespace Dreamscape
         {
             if (used || other.GetComponentInParent<PlayerInputController>() == null)
                 return;
-            used = true;
-
-            if (!string.IsNullOrEmpty(nextScene) && Application.CanStreamedLevelBeLoaded(nextScene))
-            {
-                SceneManager.LoadScene(nextScene);
-                return;
-            }
-
-            int next = gameObject.scene.buildIndex + 1;
-            if (gameObject.scene.buildIndex >= 0 && next < SceneManager.sceneCountInBuildSettings)
-                SceneManager.LoadScene(next);
-            else if (GameFlow.MenuAvailable)
-                GameFlow.ReturnToMenu();
+            used = GameFlow.CompletePhase(gameObject.scene, nextScene);
         }
     }
 }

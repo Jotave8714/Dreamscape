@@ -49,6 +49,16 @@ namespace Dreamscape.UI
                 GamePause.Resume();
         }
 
+        void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
+
+        void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (mode == LoadSceneMode.Single)
+                Close();
+        }
+
         void Update()
         {
             bool toggle = (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) ||
