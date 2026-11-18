@@ -39,6 +39,15 @@ EditorBuildSettings:
     path: Assets/Scenes/Fase10_EscadariaDeLivros.unity
     guid: 7c3feb3cfd3fb44a3b803f77d77ea8b4
   - enabled: 1
+    path: Assets/Scenes/Fase13_AlaProibida.unity
+    guid: fff94f09cee174afba2645d3d9227f0f
+  - enabled: 1
+    path: Assets/Scenes/Fase14_TorreDoRelogio.unity
+    guid: 8b6628c932f7d4ef0b45b9a650387f81
+  - enabled: 1
+    path: Assets/Scenes/Fase15_MarDePaginas.unity
+    guid: aa3ec55090e3e44b98117a8d5e22b135
+  - enabled: 1
     path: Assets/Scenes/PrototypeEnding.unity
     guid: b282875bb7aed4ebebbb32cea5fe97c8
   - enabled: 0
