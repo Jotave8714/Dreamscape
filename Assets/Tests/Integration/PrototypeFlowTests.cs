@@ -22,7 +22,7 @@ namespace Dreamscape.Tests
         const string FirstPhase = "DS07_Fase1_Jogavel";
         const string SecondPhase = "DS09_Fase2_Jogavel";
         const string ThirdPhase = "Fase3_CorredorDasLuzes";
-        const string LastPhase = "Fase7_Despertar";
+        const string LastPhase = "Fase17_Despertar";
 
         byte[] originalSave;
         string savePath;
