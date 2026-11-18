@@ -39,6 +39,12 @@ EditorBuildSettings:
     path: Assets/Scenes/Fase10_EscadariaDeLivros.unity
     guid: 7c3feb3cfd3fb44a3b803f77d77ea8b4
   - enabled: 1
+    path: Assets/Scenes/Fase11_SalaDeLeituraFlutuante.unity
+    guid: 2e85e347d114a4e0388bedf9e1f95ac0
+  - enabled: 1
+    path: Assets/Scenes/Fase12_ArquivoDasLembrancas.unity
+    guid: ad7bfae3d333e411eac9cd40a49f1d54
+  - enabled: 1
     path: Assets/Scenes/Fase13_AlaProibida.unity
     guid: fff94f09cee174afba2645d3d9227f0f
   - enabled: 1
