@@ -38,6 +38,44 @@ namespace Dreamscape.EditorTools
             Debug.Log("Dreamscape: previews em " + dir);
         }
 
+        /// <summary>Captura uma cena (nome sem extensão) em Temp/previews: visão do jogador, visão alta atrás dele e aérea.</summary>
+        public static void CaptureScene(string sceneName)
+        {
+            string dir = Path.GetFullPath("Temp/previews");
+            Directory.CreateDirectory(dir);
+            string[] guids = AssetDatabase.FindAssets(sceneName + " t:Scene", new[] { "Assets/Scenes" });
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (Path.GetFileNameWithoutExtension(path) != sceneName)
+                    continue;
+                EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                Capture(Path.Combine(dir, sceneName + "_jogador.png"), PlayerCamera());
+                Capture(Path.Combine(dir, sceneName + "_alta.png"), ChaseCamera());
+                Capture(Path.Combine(dir, sceneName + "_aerea.png"), OverviewCamera());
+                Debug.Log("Dreamscape: previews de " + sceneName + " em " + dir);
+                return;
+            }
+            Debug.LogWarning("Dreamscape: cena não encontrada para preview: " + sceneName);
+        }
+
+        // atrás e acima do jogador, olhando para a frente da fase
+        static Camera ChaseCamera()
+        {
+            Camera main = Camera.main;
+            if (main == null)
+                return null;
+            Transform player = main.transform.root;
+            var go = new GameObject("Preview camera", typeof(Camera));
+            Camera cam = go.GetComponent<Camera>();
+            cam.CopyFrom(main);
+            cam.fieldOfView = 70f;
+            cam.farClipPlane = 600f;
+            cam.transform.position = player.position - player.forward * 5f + Vector3.up * 5f;
+            cam.transform.LookAt(player.position + player.forward * 14f);
+            return cam;
+        }
+
         static Camera PlayerCamera() => Camera.main;
 
         static Camera OverviewCamera()

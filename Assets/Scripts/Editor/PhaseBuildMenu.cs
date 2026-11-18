@@ -19,15 +19,27 @@ namespace Dreamscape.EditorTools
             ("Assets/Scenes/DS03_Fase2_Layout.unity", PhaseTheme.Fase2),
         };
 
-        [MenuItem("Dreamscape/Fases/Gerar todas as fases novas")]
-        public static void BuildNewPhases()
+        static List<IPhaseBuilder> Builders()
         {
             var builders = new List<IPhaseBuilder>();
             foreach (Type t in TypeCache.GetTypesDerivedFrom<IPhaseBuilder>())
                 if (!t.IsAbstract && !t.IsInterface)
                     builders.Add((IPhaseBuilder)Activator.CreateInstance(t));
             builders.Sort((a, b) => a.Order.CompareTo(b.Order));
+            return builders;
+        }
 
+        /// <summary>Gera só a fase com essa cena (nome sem extensão), por exemplo "Fase8_SaguaoDosSussurros".</summary>
+        public static void BuildPhase(string sceneName) =>
+            Build(Builders().FindAll(b => b.SceneName == sceneName));
+
+        [MenuItem("Dreamscape/Fases/Gerar todas as fases novas")]
+        public static void BuildNewPhases() => Build(Builders());
+
+        static void Build(List<IPhaseBuilder> builders)
+        {
+            if (builders.Count == 0)
+                Debug.LogWarning("Dreamscape: nenhuma fase encontrada para gerar.");
             foreach (IPhaseBuilder builder in builders)
             {
                 try

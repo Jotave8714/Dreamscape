@@ -29,7 +29,7 @@ namespace Dreamscape.EditorTools
     /// alcance horizontal de um pulo correndo ~3,3 m (~5 m com Velocidade); pulo duplo soma ~1,1 m de altura.
     /// Projete com folga: vão máximo seguro 2,8 m e degrau máximo 0,9 m sem poder.
     /// </summary>
-    public sealed class PhaseKit
+    public sealed partial class PhaseKit
     {
         const string EnvFolder = "Assets/Art/Environment/";
         const string PlayerPrefab = "Assets/Prefabs/FirstPersonPlayer.prefab";
@@ -57,7 +57,38 @@ namespace Dreamscape.EditorTools
         public static PhaseKit Begin(string sceneName, PhaseTheme theme) =>
             new PhaseKit($"Assets/Scenes/{sceneName}.unity", theme);
 
-        static Transform Group(string name) => new GameObject(name).transform;
+        // decora uma cena já aberta: tudo o que o kit criar fica sob um único objeto raiz
+        PhaseKit(Scene scene, PhaseTheme theme, string rootName)
+        {
+            Scene = scene;
+            ScenePath = scene.path;
+            Theme = theme;
+            Transform root = Group(rootName);
+            geometry = Group("Geometria", root);
+            hazards = Group("Armadilhas", root);
+            pickups = Group("Power-ups", root);
+            props = Group("Cenario", root);
+        }
+
+        /// <summary>
+        /// Usa o kit numa cena já aberta (as Fases 1 e 2 feitas à mão), sob o objeto <paramref name="rootName"/>.
+        /// Um objeto anterior com o mesmo nome é apagado antes, então rodar de novo não duplica nada.
+        /// Não chama <see cref="Finish"/>: quem decora salva a cena.
+        /// </summary>
+        public static PhaseKit Dress(Scene scene, PhaseTheme theme, string rootName = "Cenario biblioteca")
+        {
+            foreach (GameObject go in scene.GetRootGameObjects())
+                if (go.name == rootName)
+                    UnityEngine.Object.DestroyImmediate(go);
+            return new PhaseKit(scene, theme, rootName);
+        }
+
+        static Transform Group(string name, Transform parent = null)
+        {
+            var t = new GameObject(name).transform;
+            t.SetParent(parent, false);
+            return t;
+        }
 
         // ------------------------------------------------------------------ materiais
 
@@ -480,7 +511,7 @@ namespace Dreamscape.EditorTools
 
         // ------------------------------------------------------------------ encerrar
 
-        /// <summary>Aplica a iluminação do tema, grava a cena e a inclui no build (depois das que já existem).</summary>
+        /// <summary>Aplica a iluminação do tema, grava a cena e a inclui no build (antes do encerramento).</summary>
         public void Finish()
         {
             if (!hasPlayer)
@@ -494,12 +525,19 @@ namespace Dreamscape.EditorTools
             AssetDatabase.SaveAssets();
         }
 
+        const string EndingPath = "Assets/Scenes/PrototypeEnding.unity";
+
+        /// <summary>
+        /// Inclui a fase no build logo antes do encerramento (as fases seguem a ordem do build; o que vem depois do
+        /// encerramento fica fora do fluxo). Gerar as fases em ordem mantém a sequência.
+        /// </summary>
         public static void AddToBuild(string path)
         {
             var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (scenes.Exists(s => s.path == path))
                 return;
-            scenes.Add(new EditorBuildSettingsScene(path, true));
+            int ending = scenes.FindIndex(s => s.path == EndingPath);
+            scenes.Insert(ending >= 0 ? ending : scenes.Count, new EditorBuildSettingsScene(path, true));
             EditorBuildSettings.scenes = scenes.ToArray();
         }
     }
