@@ -25,6 +25,9 @@ namespace Dreamscape.PowerUps
         public abstract void Apply(CharacterMotor motor);
         public abstract void Remove(CharacterMotor motor);
 
+        /// <summary>Falso quando o efeito terminou antes do tempo (ex.: escudo consumido).</summary>
+        public virtual bool IsActive(CharacterMotor motor) => true;
+
         void Reset() => GetComponent<Collider>().isTrigger = true;
 
         // os coletáveis desenhados nas cenas têm colisor sólido; sem trigger o jogador esbarraria neles

@@ -44,7 +44,7 @@ namespace Dreamscape.PowerUps
             {
                 Effect effect = effects[i];
                 effect.Remaining -= Time.deltaTime;
-                if (effect.Remaining > 0f)
+                if (effect.Remaining > 0f && effect.Pickup.IsActive(motor))
                     continue;
                 effect.Pickup.Remove(motor);
                 effect.Pickup.gameObject.SetActive(true);
