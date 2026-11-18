@@ -1,3 +1,4 @@
+using System.IO;
 using Dreamscape.Characters;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -5,28 +6,30 @@ using UnityEngine.SceneManagement;
 namespace Dreamscape.Core
 {
     /// <summary>
-    /// Fluxo do protótipo: menu, duas fases e encerramento. O save guarda somente a fase atual.
+    /// Navegação entre o menu, as fases e o encerramento. As fases seguem a ordem do build: a primeira é a primeira
+    /// cena depois do menu e concluir uma fase carrega a cena seguinte. O encerramento fecha a sequência; cenas de
+    /// demonstração ficam depois dele no build, fora do fluxo. Entrar numa fase com jogador salva o progresso.
     /// </summary>
     public static class GameFlow
     {
         public const string MenuScene = "MainMenu";
-        public const string FirstPhaseScene = "DS07_Fase1_Jogavel";
-        public const string SecondPhaseScene = "DS13_Fase2_Jogavel";
         public const string EndingScene = "PrototypeEnding";
+        const string UnusedTemplateScene = "SampleScene"; // cena vazia do template da Unity
 
         public static bool HasSave => SavedSceneAvailable(out _);
-        public static bool CanStartNewGame => Application.CanStreamedLevelBeLoaded(FirstPhaseScene);
+        public static bool CanStartNewGame => FirstPhase() != null;
         public static bool MenuAvailable => Application.CanStreamedLevelBeLoaded(MenuScene);
 
         public static void NewGame()
         {
-            if (!CanStartNewGame)
+            string first = FirstPhase();
+            if (first == null)
             {
                 Debug.LogError("Dreamscape: nenhuma fase no build. Adicione as fases em Build Profiles.");
                 return;
             }
             SaveSystem.Delete();
-            LoadScene(FirstPhaseScene);
+            LoadScene(first);
         }
 
         public static void Continue()
@@ -37,31 +40,27 @@ namespace Dreamscape.Core
 
         public static void ReturnToMenu() => LoadScene(MenuScene);
 
-        public static bool CompletePhase(Scene phase)
+        /// <summary>
+        /// Conclui a fase ativa: carrega a próxima cena do build ou, sem próxima, o encerramento (ou o menu).
+        /// Chegar ao encerramento apaga o save. Recusa durante a pausa ou para uma cena que não é a ativa.
+        /// </summary>
+        public static bool CompletePhase(Scene phase, string nextScene = null)
         {
             if (GamePause.IsPaused || phase != SceneManager.GetActiveScene())
                 return false;
 
-            string next = phase.name == FirstPhaseScene ? SecondPhaseScene
-                : phase.name == SecondPhaseScene ? EndingScene : null;
+            string next = !string.IsNullOrEmpty(nextScene) && Application.CanStreamedLevelBeLoaded(nextScene)
+                ? nextScene
+                : NextInBuild(phase);
+            if (next == null)
+                next = Application.CanStreamedLevelBeLoaded(EndingScene) ? EndingScene : MenuAvailable ? MenuScene : null;
             if (next == null)
                 return false;
-            if (!Application.CanStreamedLevelBeLoaded(next))
-            {
-                Debug.LogError($"Dreamscape: adicione a cena {next} ao perfil de build.");
-                return false;
-            }
 
             if (next == EndingScene)
                 SaveSystem.Delete();
             LoadScene(next);
             return true;
-        }
-
-        static void LoadScene(string scene)
-        {
-            GamePause.Resume();
-            SceneManager.LoadScene(scene, LoadSceneMode.Single);
         }
 
         public static void Quit()
@@ -73,13 +72,47 @@ namespace Dreamscape.Core
 #endif
         }
 
+        /// <summary>Verdadeiro para cenas jogáveis (fora menu, template e encerramento) presentes no build.</summary>
+        public static bool IsPhase(string scene) =>
+            !string.IsNullOrEmpty(scene) && scene != MenuScene && scene != UnusedTemplateScene && scene != EndingScene &&
+            Application.CanStreamedLevelBeLoaded(scene);
+
+        static void LoadScene(string scene)
+        {
+            GamePause.Resume();
+            SceneManager.LoadScene(scene, LoadSceneMode.Single);
+        }
+
+        static string NextInBuild(Scene phase)
+        {
+            int next = phase.buildIndex + 1;
+            if (phase.buildIndex < 0 || next >= SceneManager.sceneCountInBuildSettings)
+                return null;
+            return SceneName(next);
+        }
+
         static bool SavedSceneAvailable(out string scene)
         {
             scene = SaveSystem.LoadScene();
-            return IsPhase(scene) && Application.CanStreamedLevelBeLoaded(scene);
+            // o save pode apontar para uma fase que saiu do build numa versão nova do jogo
+            return IsPhase(scene);
         }
 
-        static bool IsPhase(string scene) => scene == FirstPhaseScene || scene == SecondPhaseScene;
+        static string FirstPhase()
+        {
+            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+            {
+                string name = SceneName(i);
+                if (name == EndingScene)
+                    return null;
+                if (name != MenuScene && name != UnusedTemplateScene)
+                    return name;
+            }
+            return null;
+        }
+
+        static string SceneName(int buildIndex) =>
+            Path.GetFileNameWithoutExtension(SceneUtility.GetScenePathByBuildIndex(buildIndex));
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Install()

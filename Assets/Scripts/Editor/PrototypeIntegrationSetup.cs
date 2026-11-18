@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Dreamscape.Characters;
-using Dreamscape.Core;
 using Dreamscape.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -11,12 +9,17 @@ using UnityEngine.SceneManagement;
 
 namespace Dreamscape.EditorTools
 {
+    /// <summary>
+    /// Integra o protótipo: porta de conclusão nas Fases 1 e 2, cena de encerramento e ordem do build
+    /// (menu, Fase 1, Fase 2, demais fases, encerramento). A Fase 2 é a cena da pegadinha (DS-09/DS-15).
+    /// </summary>
     public static class PrototypeIntegrationSetup
     {
         public const string FirstPhasePath = "Assets/Scenes/DS07_Fase1_Jogavel.unity";
-        public const string SecondPhasePath = "Assets/Scenes/DS13_Fase2_Jogavel.unity";
+        public const string SecondPhasePath = PhaseTwoTrapSetup.ScenePath;
         public const string EndingPath = "Assets/Scenes/PrototypeEnding.unity";
         const string MenuPath = "Assets/Scenes/MainMenu.unity";
+        const string TemplatePath = "Assets/Scenes/SampleScene.unity";
 
         [UnityEditor.MenuItem("Dreamscape/Integrar prototipo DS-13")]
         public static void Setup()
@@ -25,29 +28,12 @@ namespace Dreamscape.EditorTools
                 return;
 
             Scene first = EditorSceneManager.OpenScene(FirstPhasePath, OpenSceneMode.Single);
-            BindExit("N7 - Porta de conclusao [transicao DS13]");
-            PowerUpSetupMenu.Setup();
-            DisableReviewCameras();
+            BindGoal("N7 - Porta de conclusao [transicao DS13]");
             EditorSceneManager.SaveScene(first);
 
-            Scene second = EditorSceneManager.OpenScene(File.Exists(SecondPhasePath)
-                ? SecondPhasePath : "Assets/Scenes/DS03_Fase2_Layout.unity", OpenSceneMode.Single);
-            if (!EditorApplication.ExecuteMenuItem("Dreamscape/Montar personagens na cena"))
-                throw new InvalidOperationException("Não foi possível montar os personagens na Fase 2.");
-            GameObject player = GameObject.Find("Player");
-            Vector3 spawn = Required("Spawn - inicio Fase 2").transform.position;
-            player.transform.position = spawn;
-            GameObject.Find("Moema").transform.position = spawn + new Vector3(1.5f, 0f, -1.5f);
-
-            DisableReviewCameras();
-
-            GameObject fallZone = Required("Zona de queda [DS07]");
-            if (!fallZone.TryGetComponent<PhaseFallZone>(out _))
-                fallZone.AddComponent<PhaseFallZone>();
-            fallZone.GetComponent<BoxCollider>().isTrigger = true;
-            BindExit("Portal de conclusao [DS13]");
-            PowerUpSetupMenu.Setup();
-            EditorSceneManager.SaveScene(second, SecondPhasePath);
+            Scene second = EditorSceneManager.OpenScene(SecondPhasePath, OpenSceneMode.Single);
+            BindGoal("Portal de conclusao [DS13]");
+            EditorSceneManager.SaveScene(second);
 
             Scene ending = File.Exists(EndingPath)
                 ? EditorSceneManager.OpenScene(EndingPath, OpenSceneMode.Single)
@@ -56,49 +42,39 @@ namespace Dreamscape.EditorTools
                 new GameObject("PrototypeEnding").AddComponent<PrototypeEnding>();
             EditorSceneManager.SaveScene(ending, EndingPath);
 
-            var scenes = new List<EditorBuildSettingsScene>();
-            foreach (string path in new[] { MenuPath, FirstPhasePath, SecondPhasePath, EndingPath })
-                scenes.Add(new EditorBuildSettingsScene(path, true));
+            // fases extras já no build mantêm a ordem; o encerramento fecha a sequência e demonstrações vêm depois
+            var phases = new List<string> { FirstPhasePath, SecondPhasePath };
+            var extras = new List<EditorBuildSettingsScene>();
             foreach (EditorBuildSettingsScene existing in EditorBuildSettings.scenes)
             {
-                if (scenes.Exists(scene => scene.path == existing.path))
+                string path = existing.path;
+                if (path == MenuPath || path == TemplatePath || path == EndingPath || phases.Contains(path))
                     continue;
-                scenes.Add(new EditorBuildSettingsScene(existing.path,
-                    existing.enabled && existing.path != "Assets/Scenes/SampleScene.unity"));
+                if (Path.GetFileName(path).StartsWith("Fase", StringComparison.Ordinal))
+                    phases.Add(path);
+                else
+                    extras.Add(existing);
             }
+
+            var scenes = new List<EditorBuildSettingsScene> { new EditorBuildSettingsScene(MenuPath, true) };
+            phases.ForEach(path => scenes.Add(new EditorBuildSettingsScene(path, true)));
+            scenes.Add(new EditorBuildSettingsScene(EndingPath, true));
+            scenes.AddRange(extras);
+            scenes.Add(new EditorBuildSettingsScene(TemplatePath, false));
             EditorBuildSettings.scenes = scenes.ToArray();
             AssetDatabase.SaveAssets();
             EditorSceneManager.OpenScene(MenuPath, OpenSceneMode.Single);
-            Debug.Log("DS-13: menu, Fase 1, Fase 2 e encerramento integrados.");
+            Debug.Log("DS-13: menu, fases e encerramento integrados.");
         }
 
-        static void BindExit(string name)
+        static void BindGoal(string name)
         {
-            GameObject portal = Required(name);
-            if (!portal.TryGetComponent<PhaseExit>(out _))
-                portal.AddComponent<PhaseExit>();
-            portal.GetComponent<BoxCollider>().isTrigger = true;
-        }
-
-        static void DisableReviewCameras()
-        {
-            Camera main = Camera.main;
-            foreach (Camera camera in UnityEngine.Object.FindObjectsByType<Camera>())
-            {
-                if (camera == main)
-                    continue;
-                camera.enabled = false;
-                if (camera.TryGetComponent(out AudioListener listener))
-                    listener.enabled = false;
-            }
-        }
-
-        static GameObject Required(string name)
-        {
-            GameObject found = GameObject.Find(name);
-            if (found == null)
+            GameObject portal = GameObject.Find(name);
+            if (portal == null)
                 throw new InvalidOperationException($"Objeto de integração ausente: {name}");
-            return found;
+            if (!portal.TryGetComponent<PhaseGoal>(out _))
+                portal.AddComponent<PhaseGoal>();
+            portal.GetComponent<Collider>().isTrigger = true;
         }
     }
 }

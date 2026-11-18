@@ -19,6 +19,11 @@ namespace Dreamscape.Tests
 {
     public sealed class PrototypeFlowTests
     {
+        const string FirstPhase = "DS07_Fase1_Jogavel";
+        const string SecondPhase = "DS09_Fase2_Jogavel";
+        const string ThirdPhase = "Fase3_CorredorDasLuzes";
+        const string LastPhase = "Fase7_Despertar";
+
         byte[] originalSave;
         string savePath;
         Keyboard keyboard;
@@ -79,25 +84,25 @@ namespace Dreamscape.Tests
                 .Single(button => button.name == "NOVO JOGO");
             Assert.That(start.interactable, Is.True);
             start.onClick.Invoke();
-            yield return WaitForScene(GameFlow.FirstPhaseScene);
-            Assert.That(SaveSystem.LoadScene(), Is.EqualTo(GameFlow.FirstPhaseScene));
+            yield return WaitForScene(FirstPhase);
+            Assert.That(SaveSystem.LoadScene(), Is.EqualTo(FirstPhase));
             yield return new WaitForSeconds(0.2f);
-            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(GameFlow.FirstPhaseScene));
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(FirstPhase));
         }
 
         [UnityTest]
         public IEnumerator BothPhasesHavePlayerExitFallZoneAndTheirOwnPower()
         {
-            foreach (string phase in new[] { GameFlow.FirstPhaseScene, GameFlow.SecondPhaseScene })
+            foreach (string phase in new[] { FirstPhase, SecondPhase })
             {
                 yield return Load(phase);
                 Assert.That(Object.FindObjectsByType<PlayerInputController>().Length, Is.EqualTo(1));
-                Assert.That(Object.FindObjectsByType<PhaseExit>().Length, Is.EqualTo(1));
-                Assert.That(Object.FindAnyObjectByType<PhaseExit>().GetComponent<BoxCollider>().isTrigger, Is.True);
+                Assert.That(Object.FindObjectsByType<PhaseGoal>().Length, Is.EqualTo(1));
+                Assert.That(Object.FindAnyObjectByType<PhaseGoal>().GetComponent<Collider>().isTrigger, Is.True);
                 Assert.That(Object.FindAnyObjectByType<PhaseFallZone>().GetComponent<BoxCollider>().isTrigger, Is.True);
                 Assert.That(Object.FindObjectsByType<Camera>().Count(camera => camera.enabled), Is.EqualTo(1));
                 Assert.That(Object.FindObjectsByType<PowerUpPickup>().Length, Is.EqualTo(1));
-                Assert.That(phase == GameFlow.FirstPhaseScene
+                Assert.That(phase == FirstPhase
                     ? Object.FindAnyObjectByType<DoubleJumpPickup>() != null
                     : Object.FindAnyObjectByType<SpeedPickup>() != null, Is.True);
             }
@@ -106,34 +111,44 @@ namespace Dreamscape.Tests
         [UnityTest]
         public IEnumerator CompanionCannotActivateTheExit()
         {
-            yield return Load(GameFlow.FirstPhaseScene);
+            yield return Load(FirstPhase);
             MoemaCompanion companion = Object.FindAnyObjectByType<MoemaCompanion>();
             companion.enabled = false;
             CharacterMotor motor = companion.GetComponent<CharacterMotor>();
             motor.Teleport(ExitPosition(), Quaternion.identity);
             yield return new WaitForSeconds(0.2f);
-            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(GameFlow.FirstPhaseScene));
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(FirstPhase));
         }
 
         [UnityTest]
         public IEnumerator FirstExitLoadsSecondPhaseWithFreshPlayerAndCheckpoint()
         {
-            yield return Load(GameFlow.FirstPhaseScene);
+            yield return Load(FirstPhase);
             yield return Collect<DoubleJumpPickup>();
             Assert.That(PlayerMotor().MaxAirJumps, Is.EqualTo(1));
             PlayerMotor().Teleport(ExitPosition(), Quaternion.identity);
-            yield return WaitForScene(GameFlow.SecondPhaseScene);
+            yield return WaitForScene(SecondPhase);
             Assert.That(PlayerMotor().MaxAirJumps, Is.Zero);
             Assert.That(PlayerMotor().SpeedMultiplier, Is.EqualTo(1f));
-            Assert.That(SaveSystem.LoadScene(), Is.EqualTo(GameFlow.SecondPhaseScene));
+            Assert.That(SaveSystem.LoadScene(), Is.EqualTo(SecondPhase));
         }
 
         [UnityTest]
-        public IEnumerator FinalExitShowsEndingAndPlayAgainClearsSpeed()
+        public IEnumerator SecondExitLoadsThirdPhaseWithoutSpeedAndCheckpoint()
         {
-            yield return Load(GameFlow.SecondPhaseScene);
+            yield return Load(SecondPhase);
             yield return Collect<SpeedPickup>();
             Assert.That(PlayerMotor().SpeedMultiplier, Is.EqualTo(1.5f));
+            PlayerMotor().Teleport(ExitPosition(), Quaternion.identity);
+            yield return WaitForScene(ThirdPhase);
+            Assert.That(PlayerMotor().SpeedMultiplier, Is.EqualTo(1f));
+            Assert.That(SaveSystem.LoadScene(), Is.EqualTo(ThirdPhase));
+        }
+
+        [UnityTest]
+        public IEnumerator FinalExitShowsEndingAndPlayAgainStartsFresh()
+        {
+            yield return Load(LastPhase);
             PlayerMotor().Teleport(ExitPosition(), Quaternion.identity);
             yield return WaitForScene(GameFlow.EndingScene);
             Assert.That(Object.FindAnyObjectByType<PlayerInputController>(), Is.Null);
@@ -141,7 +156,7 @@ namespace Dreamscape.Tests
             Assert.That(SaveSystem.LoadScene(), Is.Null);
             Assert.That(GameFlow.HasSave, Is.False);
             EndingButton("NewGame").onClick.Invoke();
-            yield return WaitForScene(GameFlow.FirstPhaseScene);
+            yield return WaitForScene(FirstPhase);
             Assert.That(PlayerMotor().SpeedMultiplier, Is.EqualTo(1f));
             Assert.That(PlayerMotor().MaxAirJumps, Is.Zero);
         }
@@ -149,7 +164,7 @@ namespace Dreamscape.Tests
         [UnityTest]
         public IEnumerator EndingMenuButtonReturnsToMenuWithoutAContinueSave()
         {
-            yield return Load(GameFlow.SecondPhaseScene);
+            yield return Load(LastPhase);
             PlayerMotor().Teleport(ExitPosition(), Quaternion.identity);
             yield return WaitForScene(GameFlow.EndingScene);
             EndingButton("MainMenu").onClick.Invoke();
@@ -162,7 +177,7 @@ namespace Dreamscape.Tests
         }
 
         [UnityTest]
-        public IEnumerator ContinueAcceptsOnlyTheTwoPlayablePhases()
+        public IEnumerator ContinueAcceptsOnlyPlayablePhases()
         {
             foreach (string invalid in new[] { GameFlow.MenuScene, GameFlow.EndingScene, "SampleScene", "CenaRemovida" })
             {
@@ -172,10 +187,10 @@ namespace Dreamscape.Tests
                 yield return null;
                 Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(GameFlow.MenuScene));
             }
-            SaveSystem.SaveScene(GameFlow.SecondPhaseScene);
+            SaveSystem.SaveScene(SecondPhase);
             Assert.That(GameFlow.HasSave, Is.True);
             GameFlow.Continue();
-            yield return WaitForScene(GameFlow.SecondPhaseScene);
+            yield return WaitForScene(SecondPhase);
             Assert.That(PlayerMotor().MaxAirJumps, Is.Zero);
             Assert.That(PlayerMotor().SpeedMultiplier, Is.EqualTo(1f));
         }
@@ -183,7 +198,7 @@ namespace Dreamscape.Tests
         [UnityTest]
         public IEnumerator FiveDeathsRestorePhaseTwoPowerAndSpawn()
         {
-            yield return Load(GameFlow.SecondPhaseScene);
+            yield return Load(SecondPhase);
             Vector3 spawn = Object.FindAnyObjectByType<PlayerInputController>().transform.position;
             for (int attempt = 0; attempt < 5; attempt++)
             {
@@ -197,7 +212,7 @@ namespace Dreamscape.Tests
                     yield return null;
                 Assert.That(oldPlayer == null, Is.True, "A zona de queda deve recarregar a fase.");
                 yield return null;
-                Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(GameFlow.SecondPhaseScene));
+                Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(SecondPhase));
                 Assert.That(PlayerMotor().SpeedMultiplier, Is.EqualTo(1f));
                 Assert.That(PlayerMotor().MaxAirJumps, Is.Zero);
                 Assert.That(Object.FindAnyObjectByType<SpeedPickup>(), Is.Not.Null);
@@ -208,7 +223,7 @@ namespace Dreamscape.Tests
         [UnityTest]
         public IEnumerator PauseBlocksExitAndReturningToMenuRestoresTimeAndAudio()
         {
-            yield return Load(GameFlow.SecondPhaseScene);
+            yield return Load(SecondPhase);
             Keys(Key.Escape);
             yield return null;
             yield return null;
@@ -216,7 +231,7 @@ namespace Dreamscape.Tests
             yield return null;
             Assert.That(GamePause.IsPaused, Is.True);
             Assert.That(GameFlow.CompletePhase(SceneManager.GetActiveScene()), Is.False);
-            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(GameFlow.SecondPhaseScene));
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(SecondPhase));
             GameFlow.ReturnToMenu();
             yield return WaitForScene(GameFlow.MenuScene);
             Assert.That(GamePause.IsPaused, Is.False);
@@ -224,7 +239,7 @@ namespace Dreamscape.Tests
             Assert.That(AudioListener.pause, Is.False);
             Assert.That(Object.FindAnyObjectByType<PauseMenu>().transform.Find("Painel").gameObject.activeSelf, Is.False);
             GameFlow.NewGame();
-            yield return WaitForScene(GameFlow.FirstPhaseScene);
+            yield return WaitForScene(FirstPhase);
             Assert.That(PlayerMotor().SpeedMultiplier, Is.EqualTo(1f));
         }
 
@@ -248,7 +263,7 @@ namespace Dreamscape.Tests
 
         static CharacterMotor PlayerMotor() => Object.FindAnyObjectByType<PlayerInputController>().Motor;
 
-        static Vector3 ExitPosition() => Object.FindAnyObjectByType<PhaseExit>().GetComponent<BoxCollider>().bounds.center - Vector3.up * 0.8f;
+        static Vector3 ExitPosition() => Object.FindAnyObjectByType<PhaseGoal>().GetComponent<Collider>().bounds.center - Vector3.up * 0.8f;
 
         static Button EndingButton(string name) => Object.FindAnyObjectByType<PrototypeEnding>()
             .GetComponentsInChildren<Button>().Single(button => button.name == name);
