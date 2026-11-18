@@ -1,199 +1,176 @@
-# Fase 6 — Oficina das Serras
+# Fase 6: Oficina das Serras
 
-Cena gerada por código: `Assets/Scenes/Fase6_OficinaDasSerras.unity`, criada por `Assets/Scripts/Editor/Phases/Fase6Builder.cs` (`Order = 6`, tema `PhaseTheme.Fase6`). Para gerar, use o menu **Dreamscape > Fases > Gerar todas as fases novas** ou o modo batch descrito em `PhaseBuildMenu`.
+Cena: `Assets/Scenes/Fase6_OficinaDasSerras.unity`, gerada por `Assets/Scripts/Editor/Phases/Fase6Builder.cs` (`Order = 6`, tema `PhaseTheme.Fase6`, em terracota e laranja). Para gerar, use o menu **Dreamscape > Fases > Gerar todas as fases novas**.
 
-O ambiente é um galpão de oficina em tons de terracota e laranja, mais quente e saturado que as fases anteriores, como pede a paleta do GDD. Ele tem paredes altas, pilares, vigas que sustentam os pêndulos, postes e luminárias. As luzes avermelhadas marcam onde a serra cruza o caminho e uma luz quente marca o bolsão seguro da passarela estreita.
+## Objetivo e ambientação
 
-## Objetivo
+A oficina de encadernação da biblioteca do sonho: serras cortam corredores de estantes, prensas de livros descem num corredor estreito, páginas recém-prensadas flutuam acima das prateleiras e há mesas de costura com velas. A porta de conclusão fica num **mezanino**, logo à frente do *spawn*, sob um relógio gigante (`DreamClock`, raio 3 m, y 9), que é o marco da fase. Para chegar a ela, o jogador desce ao poço, atravessa a oficina e volta a subir com o **Pulo Duplo**.
 
-Chegar à porta de conclusão no mezanino. A porta aparece logo na entrada, mas para alcançá-la é preciso descer ao poço, pegar o **Pulo Duplo**, atravessar a oficina (serra, pêndulo e uma passarela estreita com os dois) e subir de volta por uma escadaria de degraus altos.
+## Ritmo da fase
 
-## Mecânicas introduzidas
+| Etapa | Onde | O que acontece |
+| --- | --- | --- |
+| Apresentar | Entrada, passarela direta, poço | A porta está à vista, mas a passarela termina num degrau de 1,7 m (truque). No poço está o primeiro Pulo Duplo, e a saída é uma estante-degrau de 1,6 m que já exige o poder. Errar só devolve o jogador ao chão do poço. |
+| Testar | Corredor da serra, galeria do pêndulo, corredor das prensas | Um perigo de cada vez, com espaço para parar entre eles. |
+| Escolher | Curva (segundo Pulo Duplo) | **Rota segura:** passarela estreita com serra e pêndulo, separados por um bolsão iluminado. **Rota alta (arriscada):** três pilhas de livros sobre o vazio, com dois vãos de 4,4 m que só o pulo duplo vence. Não tem espera, mas um erro reinicia a fase. |
+| Final | Galpão (terceiro Pulo Duplo) | A escadaria: dois degraus de 1,75 m até o mezanino. Quem erra cai no galpão e tenta de novo. |
 
-- **Serra** (`kit.Saw`): vai e volta num trajeto fixo que cruza o corredor e para um instante em cada ponta. A janela de passagem é previsível: passe pelo lado oposto ao da serra.
-- **Pêndulo** (`kit.Pendulum`): dois pêndulos com offsets diferentes (0 e 0,6 s), um de cada orientação.
-- **Leitura de ritmo**: a serra e o pêndulo aparecem juntos numa passarela de 2 m, separados por um bolsão seguro.
-- **Pulo Duplo para altura**: os degraus de 1,6, 1,7 e 1,8 m não se sobem com um pulo só (1,1 m). O poder vale até a fase reiniciar.
-- **Rota de queda**: o piso do galpão fica sob toda a escadaria. Quem erra um degrau cai de volta ao pé da escalada, sem morrer e ainda com o poder.
+O efeito do poder dura 30 s. Por isso há três coletáveis, cada um perto do trecho que o exige: no poço (para sair dele), na curva (para a rota alta) e no galpão, 4 m antes da escadaria.
 
-## Seções
+## Mecânicas
 
-| # | Seção | Topo do piso (y) | Área (x; z) |
-| --- | --- | --- | --- |
-| 1 | Entrada (spawn, nome da fase) | 0 | x -3..3; z -1..5 |
-| 2 | Passarela direta (truque) | 0 | x -1..1; z 5..12 |
-| 3 | Poço do pulo duplo | -3,4 | x -11..-3; z -2..6 |
-| 4 | Corredor da serra | -3,4 | x -10..-4; z 6..17 |
-| 5 | Galeria do pêndulo | -3,4 | x -10..-4; z 17..28 |
-| 6 | Curva (dica de ritmo) | -3,4 | x -10..-4; z 28..32 |
-| 7 | Passarela estreita: serra + pêndulo | -3,4 | x -4..6; z 29..31 |
-| 8 | Galpão da escalada (rota de queda) | -3,4 | x 6..14; z 16..34 |
-| 9 | Degraus altos 1 e 2 | -1,8 e -0,1 | x 9..13; z 22,2..25,2 e 18..21 |
-| 10 | Mezanino da porta | +1,7 | x -3..13; z 12..16,8 |
+- **Serra** (`kit.Saw`): vai e volta num trajeto fixo. No corredor, passe pelo lado oposto ao da serra.
+- **Pêndulo** (`kit.Pendulum`): dois, um em cada orientação (offsets 0 e 0,6 s).
+- **Prensa de livros** (`kit.Press`, nova nesta fase): duas, num corredor de 1,6 m, defasadas meio ciclo. Passa-se por baixo com ela erguida. Pular embaixo dela mata, porque a cabeça chega a 2,86 m e a caixa erguida começa a 1,95 m.
+- **Pulo Duplo para altura e distância**: degraus de 1,6 a 1,75 m e vãos de 4,4 m.
 
-O percurso da rota correta tem cerca de **76,5 m** em planta, somando os trechos entre os pontos da tabela abaixo, mais a queda de 3,4 m e a subida de 5,1 m.
+Todos os ciclos usam `Time.timeSinceLevelLoad`, que zera quando a cena recarrega. Por isso, cada tentativa começa no mesmo ponto de todos os ciclos.
+
+## Seções e plataformas (topo em Y)
+
+| # | Seção | Peça | Topo (y) | Área (x; z) |
+| --- | --- | --- | --- | --- |
+| 1 | Entrada (*spawn*, nome da fase) | `Platform` | 0 | −3..3; −1..5 |
+| 2 | Passarela direta (truque) | `BookPlatform` | 0 | −1..1; 5..12 |
+| 3 | Poço do pulo duplo | `Platform` | −3,4 | −11..−3; −2..6 |
+| 4 | Corredor da serra e galeria do pêndulo | `Platform` | −1,8 | −10..−4; 6..21 |
+| 5 | Corredor das prensas (1,6 m livres) | `Platform` | −1,8 | −8,1..−5,9; 21..29 |
+| 6 | Curva (escolha) | `Platform` | −1,8 | −10..−4; 29..34 |
+| 7 | Passarela estreita (rota segura) | `Platform` | −1,8 | −4..6; 30,5..32,5 |
+| 8 | Pilhas H0, H1, H2 (rota alta) | `BookPlatform` | −0,1 | H0 −7..−5; 34..36,8 · H1 −0,6..1,8; 35,8..37,8 · H2 6,2..8,6; 35,8..37,8 |
+| 9 | Galpão da escalada | `Platform` | −1,8 | 6..14; 16..38 |
+| 10 | Degrau alto | `BookPlatform` | −0,05 | 9..13; 18..21 |
+| 11 | Mezanino da porta | `Platform` | +1,7 | −3..13; 12..16,8 |
+
+Paredes: as estantes da oficina vão da base −1,8 até o topo +2,2 (4 m acima do piso). Nem o pulo duplo alcança o topo (2,2 + 0,28 m). As faces dos degraus que exigem o poder são estantes inteiras: a "estante-degrau" do poço (1,6 m, topo rente ao corredor) e a estante sob o degrau alto (topo rente à parte de baixo dele). Assim, não fica fresta para passar por baixo nem degrau intermediário.
 
 ## Truque de cenário
 
-Da entrada, a porta fica bem à frente, na mesma linha de uma passarela reta. O caminho parece óbvio, mas a passarela termina sob a borda do mezanino, **1,7 m acima**. Um pulo sobe 1,1 m e não alcança a borda. No fim da passarela, à altura dos olhos, as placas dizem "Alto demais para um pulo" e "Procure o poder no fundo".
+Da entrada, a porta fica bem à frente, na mesma linha da passarela. A passarela termina sob a borda do mezanino, **1,7 m acima**. Um pulo sobe 1,1 m (1,38 m contando a quina da cápsula) e não alcança. As placas no fim dela dizem "Alto demais para um pulo" e "Procure o poder no fundo".
 
-- **A falha é justa**: o degrau é visível desde o spawn, a tentativa não mata e voltar à entrada leva 10 m.
-- **A falha ensina** a regra da fase: degraus acima de ~1,4 m pedem o Pulo Duplo. A mesma regra vale depois, na escadaria.
-- **Não há atalho**: com o poder, o degrau de 1,7 m seria possível, mas o poder só existe no fundo do poço. A queda até ele é de 3,4 m e o máximo com pulo duplo é 2,2 m, então não dá para voltar à passarela. No grafo, o estado (N1, com poder) é inalcançável.
+- **A falha é justa:** o degrau é visível desde o *spawn*, tentar não mata, e voltar à entrada leva 10 m.
+- **A falha ensina a regra da fase:** degrau acima de ~1,4 m pede o Pulo Duplo. A mesma regra vale no poço e na escadaria.
+- **Não há atalho:** o poder só existe no fundo. A queda até ele é de 3,4 m, e o máximo com pulo duplo é 2,2 m. Por isso o estado (N1, com poder) é inalcançável.
 
-## Pontos
+## Pontos do grafo
 
-| Ponto | Descrição | Coordenadas (x, y, z) |
+| Ponto | Descrição | Coordenadas (x; y; z) |
 | --- | --- | --- |
-| N0 | Entrada, spawn (o pufe fica atrás, em z = 0,2) | (0; 0; 1,6) |
-| N1 | Fim da passarela direta, sob a borda do mezanino | (0; 0; 11,5) |
-| N2 | Fundo do poço, coletável de Pulo Duplo | (-7,5; -3,4; 2) |
-| N3 | Corredor, antes da serra | (-7; -3,4; 8,5) |
-| N4 | Entre a serra e o pêndulo da galeria | (-7; -3,4; 17) |
-| N5 | Curva, depois do pêndulo | (-7; -3,4; 30) |
-| N6 | Bolsão seguro da passarela estreita | (1,3; -3,4; 30) |
-| N7 | Piso do galpão, pé da escalada | (11; -3,4; 27) |
-| N8 | Degrau alto 1 | (11; -1,8; 23,7) |
-| N9 | Degrau alto 2 | (11; -0,1; 19,5) |
-| N10 | Mezanino, chegada da escalada | (11; 1,7; 15,5) |
-| N11 | Porta de conclusão | (0; 1,7; 14,4) |
+| N0 | Entrada, *spawn* | (0; 0; 1,6) |
+| N1 | Fim da passarela direta | (0; 0; 11,5) |
+| N2 | Fundo do poço, Pulo Duplo 1 | (−7; −3,4; 2,5) |
+| N3 | Corredor, antes da serra | (−7; −1,8; 8) |
+| N4 | Entre a serra e o pêndulo | (−7; −1,8; 14,5) |
+| N5 | Antes das prensas | (−7; −1,8; 20,5) |
+| N6 | Refúgio entre as prensas | (−7; −1,8; 25) |
+| N7 | Curva, Pulo Duplo 2 em (−8,5; −1,8; 31,5) | (−7,5; −1,8; 31,5) |
+| N8 | Bolsão seguro da passarela estreita | (1,3; −1,8; 31,5) |
+| H0, H1, H2 | Pilhas da rota alta | (−6; −0,1; 35,4), (0,6; −0,1; 36,8), (7,4; −0,1; 36,8) |
+| N9 | Galpão, chegada da passarela | (8; −1,8; 31,5) |
+| N10 | Pé da escadaria, Pulo Duplo 3 | (11; −1,8; 25) |
+| N11 | Degrau alto | (11; −0,05; 19,5) |
+| N12 | Mezanino, chegada da escalada | (11; 1,7; 15,5) |
+| G | Porta de conclusão (yaw 0) | (0; 1,7; 14,4) |
 
 Armadilhas:
 
-| Armadilha | Posição | Trajeto | Período / offset |
+| Armadilha | Posição | Trajeto / plano | Ciclo / offset |
 | --- | --- | --- | --- |
-| Serra do corredor | (-8,9; -3,4; 12) | +3,8 m em X (x de -8,9 a -5,1) | 3,0 s |
-| Pêndulo da galeria | (-7; -3,4; 22), yaw 0 | balança em X, 50° | 2,4 s / 0 |
-| Serra da passarela | (-1; -3,4; 27) | +6 m em Z (z de 27 a 33) | 3,2 s |
-| Pêndulo da passarela | (3,5; -3,4; 30), yaw 90 | balança em Z, 50° | 2,4 s / 0,6 |
+| Serra do corredor | (−8,9; −1,8; 11) | +3,8 m em X (−8,9 a −5,1) | 3,0 s |
+| Pêndulo da galeria | (−7; −1,8; 17), yaw 0 | balança em X, 50° | 2,4 s / 0 |
+| Prensa 1 | (−7; −1,8; 23) | cobre z 22,2..23,8 | 3,8 s / 0 |
+| Prensa 2 | (−7; −1,8; 27) | cobre z 26,2..27,8 | 3,8 s / 1,9 |
+| Serra da passarela | (−1; −1,8; 28,5) | +6 m em Z (28,5 a 34,5) | 3,2 s |
+| Pêndulo da passarela | (3,5; −1,8; 31,5), yaw 90 | balança em Z, 50° | 2,4 s / 0,6 |
 
 ## Grafo das rotas
 
-Como no DS-14, cada estado é o par **(ponto, tem pulo duplo)**: F = sem poder, T = com poder. Tipos de aresta:
-
-- **andar**: piso contínuo ou degrau de até 0,9 m;
-- **queda**: só desce;
-- **coleta**: pega o poder;
-- **janela**: atravessa uma armadilha no tempo certo;
-- **pulo duplo**: exige o poder.
-
-Estados em cinza tracejado não são alcançáveis a partir de (N0, F).
+O estado é **(ponto, pulo duplo ativo)**: F = sem poder, T = com poder. As arestas `==>` exigem o poder.
 
 ```mermaid
 flowchart LR
-    subgraph SEM["sem pulo duplo (F)"]
-        A0["N0 entrada"]
-        A1["N1 fim da passarela direta"]
-        A2["N2 fundo do poço"]
-        A3["N3 antes da serra"]
-        A4["N4 entre serra e pêndulo"]
-        A5["N5 curva"]
-        A6["N6 bolsão"]
-        A7["N7 pé da escalada"]
-    end
-    subgraph COM["com pulo duplo (T)"]
-        B0["N0 entrada"]:::fora
-        B1["N1 fim da passarela"]:::fora
-        B2["N2 fundo do poço"]
-        B3["N3 antes da serra"]
-        B4["N4 entre serra e pêndulo"]
-        B5["N5 curva"]
-        B6["N6 bolsão"]
-        B7["N7 pé da escalada"]
-        B8["N8 degrau 1"]
-        B9["N9 degrau 2"]
-        B10["N10 mezanino"]
-        B11["N11 porta"]
-    end
-    A0 <-->|andar| A1
-    A0 -->|queda 3,4 m| A2
-    A2 <-->|andar| A3
-    A3 <-->|janela da serra| A4
-    A4 <-->|janela do pêndulo| A5
-    A5 <-->|janela da serra| A6
-    A6 <-->|janela do pêndulo| A7
-    A2 ==>|coleta| B2
-    B0 <-->|andar| B1
-    B0 -->|queda 3,4 m| B2
-    B1 -->|pulo duplo +1,7 m| B11
-    B2 <-->|andar| B3
-    B3 <-->|janela da serra| B4
-    B4 <-->|janela do pêndulo| B5
-    B5 <-->|janela da serra| B6
-    B6 <-->|janela do pêndulo| B7
-    B7 -->|pulo duplo +1,6 m| B8
-    B8 -->|pulo duplo +1,7 m| B9
-    B9 -->|pulo duplo +1,8 m| B10
-    B8 -->|queda| B7
-    B9 -->|queda| B7
-    B10 -->|queda pela borda norte| B7
-    B10 <-->|andar| B11
-    classDef fora fill:#eeeeee,stroke:#999999,stroke-dasharray: 4 4,color:#777777
+    N0["N0 entrada"] <-->|andar| N1["N1 fim da passarela"]
+    N0 -->|queda 3,4 m| N2["N2 poço + PD1"]
+    N2 ==>|"PD +1,6 m"| N3["N3 antes da serra"]
+    N3 <-->|janela da serra| N4["N4"]
+    N4 <-->|janela do pêndulo| N5["N5"]
+    N5 <-->|janela da prensa 1| N6["N6 refúgio"]
+    N6 <-->|janela da prensa 2| N7{"N7 curva + PD2"}
+    N7 -->|janela da serra| N8["N8 bolsão"]
+    N8 -->|janela do pêndulo| N9["N9 galpão"]
+    N7 ==>|"PD +1,7 m"| H0["H0"]
+    H0 ==>|"PD vão 4,4 m"| H1["H1"]
+    H1 ==>|"PD vão 4,4 m"| H2["H2"]
+    H2 -->|queda 1,7 m| N9
+    N9 -->|andar| N10["N10 pé da escadaria + PD3"]
+    N10 ==>|"PD +1,75 m"| N11["N11 degrau"]
+    N11 ==>|"PD vão 1,2 m, +1,75 m"| N12["N12 mezanino"]
+    N11 -->|queda| N10
+    N12 -->|andar| G(["G porta"])
+    N1 -.->|"+1,7 m sem poder: não existe"| G
+    style G fill:#d4f0cc,stroke:#3c8a3a
+    style H0 fill:#f8e2c8,stroke:#c07a2a
+    style H1 fill:#f8e2c8,stroke:#c07a2a
+    style H2 fill:#f8e2c8,stroke:#c07a2a
 ```
 
-- Sem o poder (camada F), o jogador alcança no máximo N7, ao pé da escalada. Desse ponto não sai nenhuma aresta para cima e não existe nenhuma aresta de N1 para N11. Mesmo assim, ele nunca fica preso: todas as arestas da parte baixa têm volta até N2, onde está o coletável.
-- A aresta N1 → N11 só existe na camada T, mas (N1, T) não tem aresta de entrada. As arestas de queda N0 → N2 são de mão única porque 3,4 m é mais que os 2,2 m do pulo duplo. Esse é o truque descrito no grafo.
+- Sem o poder, o jogador não sai do poço. Por isso todo estado depois de N2 é alcançado primeiro com o PD1 ativo. O PD1 dura 30 s, e as arestas do meio da fase (janelas) não dependem dele. Os coletáveis PD2 e PD3 ficam onde o poder volta a ser exigido.
+- A aresta N1 → G não existe: (N1, T) é inalcançável, já que a volta N2 → N0 seria de +3,4 m.
 
-**Rota mais curta** (busca em largura, 11 arestas):
-`(N0,F) → (N2,F) → (N2,T) → (N3,T) → (N4,T) → (N5,T) → (N6,T) → (N7,T) → (N8,T) → (N9,T) → (N10,T) → (N11,T)`
+### Rotas e distâncias (em planta)
 
-Trechos em planta: N0→N2 7,5 m (mais a queda); N2→N3 6,5; N3→N4 8,5; N4→N5 13,0; N5→N6 8,3; N6→N7 10,2; N7→N8 3,3; N8→N9 4,2; N9→N10 4,0; N10→N11 11,1. Total: **76,5 m**.
+| Rota | Caminho | Distância | Esperas | Risco |
+| --- | --- | --- | --- | --- |
+| Segura | N0 → N2 → N3 → N4 → N5 → N6 → N7 → N8 → N9 → N10 → N11 → N12 → G | **≈ 78 m** | serra, pêndulo, serra, pêndulo (até ≈ 2 s cada) | Baixo: a passarela tem 2 m, e o galpão aparece em frente. |
+| Alta | … → N7 → H0 → H1 → H2 → N10 → N11 → N12 → G | ≈ 87 m | nenhuma | Alto: dois vãos de 4,4 m sobre o vazio, com o segundo pulo no tempo certo. |
+
+O trecho comum (N0 → N7) mede ≈ 36 m. A rota alta tem cerca de 9 m a mais em planta, mas não tem nenhuma espera: só saltos. Gasta ≈ 1,7 s a mais correndo e economiza até ≈ 4 s de janelas. Os dois Pulos Duplos (PD2 na curva e PD3 no galpão) garantem que o efeito nunca acabe no meio da escalada: do PD2 ao mezanino pela rota alta são ≈ 46 m (≈ 10 s), e do PD3 ao mezanino são ≈ 8,5 m.
 
 ## Cálculos
 
-Números do `CharacterMotor` e do prefab do jogador:
+Motor: gravidade 20 m/s², pulo de 1,1 m (v₀ = 6,633 m/s, ápice em 0,33 s), corrida a 5 m/s e cápsula de 0,28 m de raio. O segundo pulo no ar também sobe 1,1 m, então o máximo é **2,2 m**, com o segundo pulo dado no ápice. Sem poder, o pé chega a 1,1 m, e a quina da cápsula rola até ~1,38 m. Por isso todo degrau que exige o poder tem 1,6 m ou mais.
 
-- gravidade 20 m/s², pulo de 1,1 m, ou seja, velocidade inicial √(2·20·1,1) = 6,63 m/s e ápice em 0,33 s;
-- corrida a 5 m/s; no ar, a aceleração é 35% da do chão (8,75 m/s²);
-- cápsula com 1,76 m de altura e 0,28 m de raio;
-- o pulo no ar tem a mesma altura de 1,1 m.
-
-- **Pulo duplo**: o segundo pulo, dado à altura y₁, leva o jogador a y₁ + 1,1 m. O máximo é **2,2 m**, com o segundo pulo dado no ápice.
-- **Sem poder**: o pé chega a 1,1 m. A base arredondada da cápsula ainda pode "rolar" sobre uma quina até ~1,38 m (1,1 + 0,28). Por isso todos os degraus que exigem o poder têm 1,6 m ou mais.
-- **Alcance**: um pulo duplo correndo, do ápice até voltar à mesma altura, fica 1,13 s no ar, o que dá ~5,7 m. As paredes da parte baixa têm 5 m (topo em +1,6) e cercam corredores sem piso alternativo, então esse alcance não abre atalhos.
-
-### Saltos difíceis
+### Degraus com pulo duplo
 
 | Salto | Vão | Altura | Margem | Janela do 2º toque* |
 | --- | --- | --- | --- | --- |
-| N7 → N8 (galpão → degrau 1) | 0 (encostado) | +1,6 m | 2,2 − 1,6 = **0,6 m** | 0,09 s a 0,58 s (0,49 s) |
-| N8 → N9 (degrau 1 → 2) | 1,2 m | +1,7 m | **0,5 m** | 0,11 s a 0,56 s (0,45 s) |
-| N9 → N10 (degrau 2 → mezanino) | 1,2 m | +1,8 m | **0,4 m** | 0,13 s a 0,53 s (0,40 s) |
-| N1 → N11 sem poder (truque) | 0 | +1,7 m | falta 0,6 m (0,32 m contando a quina) | não há |
-| Volta N2 → N0 com poder | 0 | +3,4 m | falta 1,2 m (0,92 m contando a quina) | não há |
+| Poço → corredor (estante-degrau) | 0 (encostado) | +1,6 m | **0,6 m** | 0,09 s a 0,58 s |
+| Curva → H0 | 0 (encostado) | +1,7 m | **0,5 m** | 0,11 s a 0,56 s |
+| Galpão → degrau alto | 0 (encostado) | +1,75 m | **0,45 m** | 0,12 s a 0,54 s |
+| Degrau alto → mezanino | 1,2 m | +1,75 m | **0,45 m** | 0,12 s a 0,54 s |
+| N1 → mezanino, sem poder (truque) | 0 | +1,7 m | faltam 0,32 m contando a quina | não há |
+| Poço → entrada, com poder | 0 | +3,4 m | faltam 0,92 m | não há |
+| Galpão → mezanino, com poder | — | +3,5 m | faltam 1,02 m | não há |
 
-\* Tempo depois do primeiro pulo em que o segundo toque ainda leva o pé acima da borda: 10t² − 6,63t + (h − 1,1) ≤ 0.
+\* Tempo depois do primeiro pulo em que o segundo ainda leva o pé acima da borda: 10t² − 6,633t + (h − 1,1) ≤ 0.
 
-- **Distância horizontal nos degraus**: com o segundo pulo no ápice, o pé fica acima de +1,7 m entre 0,44 s e 0,89 s, o que dá 2,2 a 4,4 m correndo. Acima de +1,8 m, fica entre 0,46 s e 0,86 s.
-- **Pulo que chega cedo**: se o jogador alcança a face do degrau antes dessa janela, a cápsula encosta na face e sobe deslizando. O motor não zera a velocidade horizontal na colisão, então ele entra no degrau assim que passa da borda.
-- **Não passa do degrau**: os degraus têm 3 m de profundidade e o pouso acontece até ~2,2 m depois da borda.
-- **Pulo parado na borda**: a aceleração no ar leva o jogador até a velocidade de andar (2,2 m/s) e ele percorre ~1,7 m até 0,89 s, mais que os 1,3 m necessários.
-- **Rota de queda**: o piso do galpão (x 6..14; z 16..34) fica sob os dois degraus, sob os vãos de 1,2 m e sob a borda norte do mezanino. Quem erra cai em N7 com o poder ainda ativo e tenta de novo.
+Com o segundo pulo no ápice, o pé fica acima de +1,75 m entre 0,45 s e 0,88 s, ou seja, de 2,2 a 4,4 m correndo. O degrau de 3 m de profundidade recebe o pouso. Quem chega cedo encosta na face (a estante) e sobe deslizando, porque o motor não zera a velocidade horizontal.
+
+### Vãos da rota alta (4,4 m, no mesmo nível)
+
+- **Com pulo duplo:** com o segundo pulo no ápice, o tempo no ar é 0,663 + √(2·1,1/20) = 1,132 s, o que dá **5,66 m** e uma margem de **1,26 m**. O vão é vencido com o segundo toque dado entre ~0,15 s e ~0,78 s depois do primeiro. Antes disso, o segundo impulso substitui uma velocidade de subida ainda alta e rende pouco.
+- **Sem pulo duplo:** o alcance nominal é 3,32 m. O limite teórico, com *coyote* de 0,12 s e as bordas da cápsula, é 4,16 m < 4,4 m: impossível. Quem chega à curva sem o poder (o PD2 está ali) não sobe nem em H0.
+- **Folgas:** a serra da passarela chega no máximo a z 35,28 (com y ≤ −0,17), e H1/H2 começam em z 35,8. A massa do pêndulo chega a z 34,15. A viga do pêndulo termina em z 34,7, e o pilar que a sustenta fica só no lado sul (z 28).
 
 ### Janelas das armadilhas
 
-Os ciclos usam `Time.time`, que não volta a zero quando a cena recarrega. O padrão é fixo e periódico, mas a fase em que cada armadilha está no começo de uma tentativa pode variar.
+- **Serra do corredor** (SmoothStep em vai e vem, 3,0 s): ela fere quando a distância ao jogador é menor que 0,78 + 0,28 = 1,06 m. Junto à parede leste (x ≈ −4,5), fere só enquanto o centro passa de −5,56: são 0,66 s por ciclo e **2,34 s livres**. A faixa de perigo tem 2,12 m em Z, o que leva 0,42 s correndo. Pelo meio do corredor a janela cai para ~0,9 s. A placa diz "Passe pelo lado oposto".
+- **Pêndulo da galeria** (massa a 2,65 m do pivô, raio 0,62 m, 50°, 2,4 s): pelo centro, fere enquanto |θ| < 19,9°. São duas passagens de 0,31 s por ciclo, com **0,89 s livres** entre elas. A faixa de perigo tem 1,8 m e leva 0,36 s.
+- **Prensas** (2 s erguida, 0,2 s descendo, 0,8 s embaixo, 0,8 s subindo; ciclo de 3,8 s): só ferem descendo ou embaixo, de T = 2,0 a 3,0 s. A Prensa 2 está meio ciclo à frente, ferindo de t = 0,1 a 1,1 (mod 3,8). Cruzar uma prensa cobre 1,6 + 0,56 = 2,16 m, o que leva 0,43 s correndo. O refúgio entre elas tem 2,4 m (o centro do jogador cabe em z 24,08..25,92).
+  - Parando no refúgio: atravessa-se a P1 quando ela termina de subir e espera-se a P2 subir. Cada janela de passagem tem 2,8 s.
+  - Correndo direto: entrar na P1 com t entre 0,3 e 1,57 (mod 3,8). É uma janela de 1,27 s.
+- **Serra da passarela** (z de 28,5 a 34,5, 3,2 s): pelo centro da passarela há duas janelas de **1,22 s** por ciclo, quando a serra está num dos trilhos.
+- **Pêndulo da passarela** (offset 0,6): mesmos números do pêndulo da galeria. O **bolsão** entre as faixas de perigo vai de x = 0,06 a 2,6 (2,5 m), sob luz quente. Como os períodos são 3,2 e 2,4 s, o padrão combinado só se repete a cada 9,6 s. Por isso a placa da curva diz "Leia o ritmo antes de correr".
 
-- **Serra do corredor** (x de -8,9 a -5,1, `SmoothStep` em vai e volta, 3,0 s)
-  - Ela fere quando a distância ao jogador é menor que 0,78 + 0,28 = 1,06 m.
-  - Junto à parede oposta (x = -4,6), o perigo dura 0,73 s por ciclo e a janela livre dura **2,27 s**.
-  - A faixa de perigo tem 2,12 m em Z: 0,42 s correndo ou 0,96 s andando.
-  - Pelo meio do corredor, as janelas caem para 0,91 s. A lição é passar pelo lado oposto.
-- **Pêndulo da galeria** (massa a 2,65 m do pivô, raio 0,62 m, 50°, 2,4 s)
-  - Pelo centro, ele fere enquanto |θ| < 19,9°. São duas passagens de 0,31 s por ciclo, com **0,89 s livres** entre elas.
-  - A faixa de perigo tem 1,8 m: 0,36 s correndo.
-  - Junto às paredes, a massa (centro a +2,10 m no extremo) só chega uma vez por ciclo, por 0,62 s.
-- **Passarela estreita** (2 m de largura)
-  - Serra em x = -1, de z = 27 a 33, 3,2 s. Pelo centro da passarela há duas janelas de **1,22 s** por ciclo, quando a serra para em cada trilho. A faixa de perigo tem 2,12 m: 0,42 s correndo.
-  - Pêndulo em x = 3,5, offset 0,6: mesmos números do pêndulo da galeria (**0,89 s livres**, 0,36 s para cruzar).
-  - O **bolsão** entre as faixas de perigo vai de x = 0,06 a 2,6 (2,5 m) e fica sob a luz quente. Ali o jogador espera e lê o segundo ritmo.
-  - Como os períodos são 3,2 e 2,4 s, o padrão combinado só se repete a cada 9,6 s. Por isso a dica da curva: "Leia o ritmo antes de correr".
+## Cenário (fora do volume jogável)
+
+- Os abajures ficam sobre o topo das estantes do corredor, nos cantos do poço, da entrada e do galpão e no mezanino, a pelo menos 1,5 m da rota. As mesas de costura ficam na entrada (fora da linha do pufe à passarela) e no galpão (z ≥ 28, longe da escadaria, para não virarem degrau).
+- As páginas flutuam acima das prensas (y ≥ 4,0, ou seja, 5,8 m acima do piso) e a leste do galpão. Os livros voam abaixo da rota alta (y ≈ −6) e no alto, atrás do poço. O relógio fica entre o corredor e o galpão, a 6 m de altura ou mais.
+- `LibraryBackdrop` envolve x[−11,3; 14,3] × z[−2,3; 38,3] (base −7, altura 15, margem 6).
 
 ## Observações
 
-- **Rotação da serra no `PhaseKit.Saw`**: o kit não atribui a lâmina (`blade`) do `SawTrap`, e o modelo `Trap_Serra` é uma malha única com origem na base. Por isso a serra inteira, e o colisor em (0; 0,85; 0), gira em torno do pé.
-  - Com esse comportamento, a faixa de perigo cresce para ~1,9 m ao longo do plano do disco.
-  - A fase continua solúvel. No corredor, a janela junto à parede cai para 1,76 s e o meio fica sempre perigoso. Na passarela, o bolsão fica com x de 0,9 a 2,6.
-  - As janelas acima consideram a serra corrigida, girando só o disco.
-- As serras usam `yaw = 0`. O kit converte `travel` para o espaço local da serra, mas o `SawTrap` aplica esse deslocamento no espaço do pai. Com yaw diferente de zero, a direção sairia girada.
+- **Rotação da serra:** o kit não atribui a lâmina (`blade`) do `SawTrap`, então o modelo inteiro gira em torno do pé, o que alarga um pouco a faixa de perigo. As janelas acima consideram o disco girando sozinho. Mesmo com a faixa maior, a fase continua solúvel.
+- As serras usam `yaw = 0`, porque o deslocamento `travel` é aplicado no espaço do pai.
 - Os textos das placas não têm acentos porque viram nomes de objetos (`Letreiro - ...`).
+- *Playtest*: a dificuldade da rota alta (vãos de 4,4 m) e se o jogador entende que o Pulo Duplo da curva é para ela.

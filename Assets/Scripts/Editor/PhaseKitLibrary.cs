@@ -64,6 +64,14 @@ namespace Dreamscape.EditorTools
                 list.Add(new CombineInstance { mesh = mesh, transform = Matrix4x4.TRS(localPos, localRot, scale) });
             }
 
+            /// <summary>Copia só o submesh <paramref name="subMesh"/> de uma malha pronta.</summary>
+            public void AddSubMesh(Mesh mesh, int subMesh, Material material, Vector3 localPos, Quaternion localRot)
+            {
+                if (!parts.TryGetValue(material, out List<CombineInstance> list))
+                    parts[material] = list = new List<CombineInstance>();
+                list.Add(new CombineInstance { mesh = mesh, subMeshIndex = subMesh, transform = Matrix4x4.TRS(localPos, localRot, Vector3.one) });
+            }
+
             public void Box(Material material, Vector3 localPos, Vector3 size, float yaw = 0f, float roll = 0f, float pitch = 0f) =>
                 Add(PhaseKit.Cube, material, localPos, Quaternion.Euler(pitch, yaw, roll), size);
 
@@ -74,27 +82,144 @@ namespace Dreamscape.EditorTools
                 if (parts.Count == 0)
                     return go;
 
-                var materials = new List<Material>();
-                var subMeshes = new List<CombineInstance>();
-                foreach (KeyValuePair<Material, List<CombineInstance>> pair in parts)
-                {
-                    var sub = new Mesh { indexFormat = IndexFormat.UInt32 };
-                    sub.CombineMeshes(pair.Value.ToArray(), true, true);
-                    materials.Add(pair.Key);
-                    subMeshes.Add(new CombineInstance { mesh = sub, transform = Matrix4x4.identity });
-                }
-                var mesh = new Mesh { name = name, indexFormat = IndexFormat.UInt32 };
-                mesh.CombineMeshes(subMeshes.ToArray(), false, false);
-                mesh.RecalculateBounds();
-                foreach (CombineInstance c in subMeshes)
-                    Object.DestroyImmediate(c.mesh);
-
-                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var materials = new List<Material>(parts.Keys);
+                go.AddComponent<MeshFilter>().sharedMesh = ToMesh(name, materials);
                 var renderer = go.AddComponent<MeshRenderer>();
                 renderer.sharedMaterials = materials.ToArray();
                 renderer.shadowCastingMode = ShadowCastingMode.On;
                 return go;
             }
+
+            /// <summary>Malha com um submesh por material, na ordem dada (submesh vazio quando o material não foi usado).</summary>
+            public Mesh ToMesh(string name, IList<Material> order)
+            {
+                var vertices = new List<Vector3>();
+                var normals = new List<Vector3>();
+                var uvs = new List<Vector2>();
+                var triangles = new List<int>[order.Count];
+                for (int m = 0; m < order.Count; m++)
+                {
+                    triangles[m] = new List<int>();
+                    if (!parts.TryGetValue(order[m], out List<CombineInstance> list))
+                        continue;
+                    foreach (CombineInstance part in list)
+                    {
+                        Mesh src = part.mesh;
+                        Matrix4x4 normalMatrix = part.transform.inverse.transpose;
+                        Vector3[] srcVertices = src.vertices;
+                        Vector3[] srcNormals = src.normals;
+                        Vector2[] srcUvs = src.uv;
+                        var remap = new Dictionary<int, int>();
+                        foreach (int t in src.GetTriangles(part.subMeshIndex))
+                        {
+                            if (!remap.TryGetValue(t, out int index))
+                            {
+                                index = vertices.Count;
+                                remap[t] = index;
+                                vertices.Add(part.transform.MultiplyPoint3x4(srcVertices[t]));
+                                normals.Add(normalMatrix.MultiplyVector(srcNormals[t]).normalized);
+                                uvs.Add(srcUvs.Length > t ? srcUvs[t] : Vector2.zero);
+                            }
+                            triangles[m].Add(index);
+                        }
+                    }
+                }
+                var mesh = new Mesh { name = name, indexFormat = IndexFormat.UInt32 };
+                mesh.SetVertices(vertices);
+                mesh.SetNormals(normals);
+                mesh.SetUVs(0, uvs);
+                mesh.subMeshCount = order.Count;
+                for (int m = 0; m < order.Count; m++)
+                    mesh.SetTriangles(triangles[m], m);
+                mesh.RecalculateBounds();
+                return mesh;
+            }
+        }
+
+        // ------------------------------------------------------------------ fileiras de livros (assets compartilhados)
+
+        const string MeshFolder = "Assets/Design/Fases/Malhas";
+        const int RowVariants = 8;
+        const float RowWidth = 1.2f, RowHeight = 0.5f;
+        static readonly Dictionary<int, Mesh> rowMeshes = new Dictionary<int, Mesh>();
+
+        // ordem fixa dos materiais de uma fileira: madeira e as sete cores de lombada
+        Material[] RowMaterials()
+        {
+            var order = new Material[1 + SpineColors.Length];
+            order[0] = Wood;
+            for (int i = 0; i < SpineColors.Length; i++)
+                order[i + 1] = SpineMaterial(i);
+            return order;
+        }
+
+        /// <summary>
+        /// Uma fileira de estante (1,2 x 0,5 m, livros dos dois lados e a prateleira embaixo), gravada uma vez como asset.
+        /// As estantes são montadas repetindo fileiras, então as cenas só guardam referências e não a malha.
+        /// </summary>
+        Mesh RowMesh(int variant)
+        {
+            if (rowMeshes.TryGetValue(variant, out Mesh cached) && cached != null)
+                return cached;
+            string path = $"{MeshFolder}/Kit_FileiraLivros_{variant}.asset";
+            Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+            if (mesh == null)
+            {
+                if (!AssetDatabase.IsValidFolder(MeshFolder))
+                    AssetDatabase.CreateFolder(MaterialFolder, "Malhas");
+                System.Random r = Seeded("Fileira " + variant);
+                var batch = new MeshBatch();
+                batch.Box(Wood, new Vector3(0f, 0.02f, 0f), new Vector3(RowWidth, 0.04f, 0.6f));
+                FillShelf(batch, r, -RowWidth / 2f + 0.03f, RowWidth - 0.06f, 0.04f, 0.15f, RowHeight - 0.08f, 1f);
+                FillShelf(batch, r, -RowWidth / 2f + 0.03f, RowWidth - 0.06f, 0.04f, -0.15f, RowHeight - 0.08f, -1f);
+                mesh = batch.ToMesh($"Fileira de livros {variant}", RowMaterials());
+                AssetDatabase.CreateAsset(mesh, path);
+            }
+            rowMeshes[variant] = mesh;
+            return mesh;
+        }
+
+        static readonly Dictionary<string, Mesh> columnMeshes = new Dictionary<string, Mesh>();
+
+        /// <summary>Coluna de <paramref name="rows"/> fileiras empilhadas (1,2 m de largura, 0,5 m por fileira), gravada como asset.</summary>
+        Mesh ColumnMesh(int variant, int rows)
+        {
+            string key = $"{rows}_{variant}";
+            if (columnMeshes.TryGetValue(key, out Mesh cached) && cached != null)
+                return cached;
+            string path = $"{MeshFolder}/Kit_ColunaLivros_{key}.asset";
+            Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+            if (mesh == null)
+            {
+                System.Random r = Seeded("Coluna " + key);
+                var batch = new MeshBatch();
+                for (int row = 0; row < rows; row++)
+                {
+                    Mesh source = RowMesh(r.Next(RowVariants));
+                    Quaternion turn = Quaternion.Euler(0f, r.NextDouble() < 0.5 ? 0f : 180f, 0f);
+                    Material[] order = RowMaterials();
+                    for (int m = 0; m < order.Length; m++)
+                        batch.AddSubMesh(source, m, order[m], new Vector3(0f, RowHeight * row, 0f), turn);
+                }
+                mesh = batch.ToMesh($"Coluna de livros {key}", RowMaterials());
+                AssetDatabase.CreateAsset(mesh, path);
+            }
+            columnMeshes[key] = mesh;
+            return mesh;
+        }
+
+        // peça de madeira feita com o cubo embutido da Unity (a cena só guarda a referência)
+        GameObject Plank(Transform parent, string name, Vector3 localPos, Vector3 size, Material material, bool shadows)
+        {
+            var go = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer));
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = localPos;
+            go.transform.localScale = size;
+            go.GetComponent<MeshFilter>().sharedMesh = Cube;
+            var renderer = go.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = shadows ? ShadowCastingMode.On : ShadowCastingMode.Off;
+            return go;
         }
 
         static System.Random Seeded(string name)
@@ -163,38 +288,47 @@ namespace Dreamscape.EditorTools
             GameObject root = Empty("Estante - " + name, solid ? geometry : props, (from + new Vector3(to.x, from.y, to.z)) / 2f, yaw);
 
             System.Random r = Seeded(name);
-            var batch = new MeshBatch();
             const float depth = 0.6f;
             const float side = 0.08f;
-            // laterais, fundo, topo e base
-            batch.Box(Wood, new Vector3(-length / 2f + side / 2f, height / 2f, 0f), new Vector3(side, height, depth));
-            batch.Box(Wood, new Vector3(length / 2f - side / 2f, height / 2f, 0f), new Vector3(side, height, depth));
-            batch.Box(DarkWood, new Vector3(0f, height / 2f, 0f), new Vector3(length, height, 0.04f));
-            batch.Box(Wood, new Vector3(0f, height - 0.05f, 0f), new Vector3(length + 0.12f, 0.1f, depth + 0.08f));
-            batch.Box(Wood, new Vector3(0f, 0.06f, 0f), new Vector3(length, 0.12f, depth + 0.04f));
-            // divisórias verticais a cada ~1,2 m
-            int bays = Mathf.Max(1, Mathf.RoundToInt(length / 1.2f));
-            float bay = length / bays;
-            for (int i = 1; i < bays; i++)
-                batch.Box(Wood, new Vector3(-length / 2f + bay * i, height / 2f, 0f), new Vector3(0.05f, height - 0.1f, depth));
-            // prateleiras a cada 0,5 m
-            int shelves = Mathf.Max(1, Mathf.FloorToInt((height - 0.3f) / 0.5f));
-            float gap = (height - 0.22f) / shelves;
-            for (int s = 0; s < shelves; s++)
+            // estantes de cenário não projetam sombra: são enormes e ficam longe do caminho
+            bool shadows = solid;
+            Transform frame = new GameObject("Madeira").transform;
+            frame.SetParent(root.transform, false);
+            Plank(frame, "Lateral E", new Vector3(-length / 2f + side / 2f, height / 2f, 0f), new Vector3(side, height, depth), Wood, shadows);
+            Plank(frame, "Lateral D", new Vector3(length / 2f - side / 2f, height / 2f, 0f), new Vector3(side, height, depth), Wood, shadows);
+            Plank(frame, "Fundo", new Vector3(0f, height / 2f, 0f), new Vector3(length, height, 0.04f), DarkWood, shadows);
+            Plank(frame, "Topo", new Vector3(0f, height - 0.05f, 0f), new Vector3(length + 0.12f, 0.1f, depth + 0.08f), Wood, shadows);
+            Plank(frame, "Base", new Vector3(0f, 0.06f, 0f), new Vector3(length, 0.12f, depth + 0.04f), Wood, shadows);
+
+            // vãos de ~1,2 m e fileiras de ~0,5 m, preenchidos com as fileiras compartilhadas
+            int bays = Mathf.Max(1, Mathf.RoundToInt(length / RowWidth));
+            float bay = (length - side) / bays;
+            int rows = Mathf.Max(1, Mathf.FloorToInt((height - 0.22f) / RowHeight));
+            float rowHeight = (height - 0.22f) / rows;
+            for (int b = 1; b < bays; b++)
+                Plank(frame, $"Divisoria {b}", new Vector3(-length / 2f + side / 2f + bay * b, height / 2f, 0f),
+                    new Vector3(0.05f, height - 0.1f, depth), Wood, shadows);
+
+            Transform books = new GameObject("Livros").transform;
+            books.SetParent(root.transform, false);
+            Material[] order = RowMaterials();
+            for (int b = 0; b < bays; b++)
             {
-                float y = 0.12f + gap * s;
-                if (s > 0)
-                    batch.Box(Wood, new Vector3(0f, y - 0.02f, 0f), new Vector3(length - 0.1f, 0.04f, depth));
-                for (int b = 0; b < bays; b++)
-                {
-                    float xs = -length / 2f + bay * b + 0.06f;
-                    FillShelf(batch, r, xs, bay - 0.1f, y, 0.15f, gap - 0.06f, 1f);
-                    FillShelf(batch, r, xs, bay - 0.1f, y, -0.15f, gap - 0.06f, -1f);
-                }
+                var go = new GameObject($"Coluna {b}", typeof(MeshFilter), typeof(MeshRenderer));
+                go.transform.SetParent(books, false);
+                go.transform.localPosition = new Vector3(-length / 2f + side / 2f + bay * (b + 0.5f), 0.12f, 0f);
+                // girar meia volta troca os lados da coluna e varia o desenho
+                go.transform.localRotation = Quaternion.Euler(0f, r.NextDouble() < 0.5 ? 0f : 180f, 0f);
+                go.transform.localScale = new Vector3((bay - 0.05f) / RowWidth, rowHeight / RowHeight, 1f);
+                go.GetComponent<MeshFilter>().sharedMesh = ColumnMesh(r.Next(4), rows);
+                var renderer = go.GetComponent<MeshRenderer>();
+                renderer.sharedMaterials = order;
+                renderer.shadowCastingMode = shadows ? ShadowCastingMode.On : ShadowCastingMode.Off;
             }
-            GameObject visual = batch.Build("Livros e madeira", root.transform);
-            visual.transform.localPosition = Vector3.zero;
-            visual.transform.localRotation = Quaternion.identity;
+
+            // estático: na build a Unity junta as fileiras em lotes (static batching)
+            foreach (Transform t in root.GetComponentsInChildren<Transform>())
+                GameObjectUtility.SetStaticEditorFlags(t.gameObject, StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccluderStatic | StaticEditorFlags.OccludeeStatic);
             if (solid)
                 Box(root, new Vector3(0f, height / 2f, 0f), new Vector3(length, height, depth));
             return root;

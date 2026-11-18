@@ -15,6 +15,7 @@ namespace Dreamscape.EditorTools
         static readonly (string scene, PhaseTheme theme)[] ExistingPhases =
         {
             ("Assets/Scenes/DS07_Fase1_Jogavel.unity", PhaseTheme.Fase1),
+            ("Assets/Scenes/DS09_Fase2_Jogavel.unity", PhaseTheme.Fase2),
             ("Assets/Scenes/DS02_Fase1_Layout.unity", PhaseTheme.Fase1),
             ("Assets/Scenes/DS03_Fase2_Layout.unity", PhaseTheme.Fase2),
         };
@@ -78,6 +79,7 @@ namespace Dreamscape.EditorTools
             AssetDatabase.Refresh();
             BuildNewPhases();
             LightExistingPhases();
+            ExistingPhaseDressing.DressAll();
         }
     }
 }

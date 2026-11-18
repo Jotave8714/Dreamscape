@@ -1,69 +1,100 @@
-# Fase 5 — Laboratório
+# Fase 5: Laboratório
 
 Cena: `Assets/Scenes/Fase5_Laboratorio.unity`, gerada por `Assets/Scripts/Editor/Phases/Fase5Builder.cs` (menu **Dreamscape > Fases > Gerar todas as fases novas**). Tema `PhaseTheme.Fase5`, em roxo e rosa, mais saturado que a Fase 4, como pede a paleta do GDD.
 
-## Objetivo
+## Objetivo e ambientação
 
-O jogador acorda na recepção de um laboratório da Unifor e precisa chegar à porta de conclusão (G). No caminho, aprende a ler o ritmo dos lasers. Na sala de triagem, escolhe entre uma rota longa e segura e uma rota curta, em que usa o Escudo para atravessar o laser mais difícil sem esperar a janela. Se tocar uma armadilha ou cair, a cena recomeça.
+O estudante sonha com um laboratório de alquimia escondido dentro da biblioteca: estantes fazem as paredes, as bancadas são pilhas de livros gigantes, mesas de pesquisa com velas ficam nos cantos e páginas soltas flutuam sobre a porta. Ele precisa chegar à porta de conclusão, em cima de um **livro aberto gigante** (G). No caminho aprende a ler o ritmo dos lasers e, na sala de triagem, escolhe entre uma rota longa e segura e uma rota curta e arriscada, em que usa o Escudo. Cair ou tocar uma armadilha reinicia a cena.
 
-## Mecânicas introduzidas
+**Marcos visuais.** Um relógio parado (`DreamClock`, raio 3 m, y 11) flutua atrás da porta e aparece por cima das estantes desde a recepção. Da triagem, a porta e o livro aberto aparecem em linha reta pela passarela escura, que é a isca do truque. Arcos de estante com friso rosa (`ShelfArch`) e luminárias marcam só as saídas verdadeiras.
+
+## Ritmo da fase
+
+| Etapa | Onde | O que acontece |
+| --- | --- | --- |
+| Apresentar | Recepção e corredor de calibração | Um laser só, com janela longa (2 s apagado) e a placa `OBSERVE O RITMO`. |
+| Testar | Sala das bancadas | Três pilhas de livros sobre o fosso, subindo de 0 a 1,5 m. Os pulos são curtos e servem para trocar de altura. |
+| Escolher | Sala de triagem (y 1,5) | Três saídas: a passarela escura (truque), a rota oeste (segura) e a ponte leste (arriscada). |
+| Desafio final | As duas rotas | Oeste: lasers em onda, serra e espinhos, com janelas folgadas. Leste: ponte sem parede sobre o vazio, Escudo, o laser que só abre 0,8 s e um vão de 2 m. |
+
+## Mecânicas
 
 | Mecânica | Onde | Como funciona |
 | --- | --- | --- |
-| Laser com ritmo | L1, LA1, LA2, LB | O feixe (y 0,825 a 1,175 m; 2,7 m de largura) fica ligado por `timeOn` e desligado por `timeOff` e pisca 0,4 s antes de religar. Os corredores têm 3 m de largura: as paredes deixam 2,7 m livres, que o feixe cobre por inteiro. Não dá para passar por baixo, porque agachado o jogador tem 1,056 m e o feixe começa em 0,825 m. Também não dá para pular por cima: os pés chegam a 1,1 m e o feixe vai até 1,175 m. |
-| Onda de lasers | LA1 → LA2 | Os dois lasers têm o mesmo ciclo (4 s), e LA2 está atrasado 0,6 s em relação a LA1. Quem corre os 3 m entre eles a 5 m/s encontra os dois desligados. |
-| Escudo (novo) | B1 | Absorve **um** contato com armadilha e se gasta. A placa "ESCUDO = 1 TOQUE" fica entre o coletável e o laser. |
-| Escolha de rota | N6 | Três saídas: passarela falsa (truque), rota segura (oeste) e rota curta (leste). |
-| Serra e espinhos em ciclo | A4 → A5 → G1 | Segundo tipo de perigo, só na rota segura, e sempre com janela previsível. |
+| Laser com ritmo | L1, LA1, LA2, LB | O feixe (y 0,825 a 1,175 m; 2,7 m de largura) fica ligado por `timeOn` e desligado por `timeOff`, e pisca 0,4 s antes de religar. Nos corredores, as estantes deixam 2,7 m livres, que o feixe cobre. Agachado, o jogador ainda toca o feixe (1,056 m), e o pulo não passa por cima (o pé chega a 1,1 m). |
+| Onda de lasers | LA1 → LA2 | Mesmo ciclo (4 s), com LA2 atrasado 0,6 s. Quem corre os 3 m entre eles encontra os dois desligados. |
+| Escudo | B1 | Absorve **um** toque e dá 1 s de proteção para sair do feixe (`PlayerShield.GraceSeconds`). |
+| Escolha de rota | N6 | Passarela falsa (truque), rota segura (oeste) e rota curta (leste). |
+| Serra e espinhos em ciclo | Rota oeste | Segundo tipo de perigo, sempre com janela previsível. |
 
 ### Ritmos (segundos)
 
-| Laser | Posição | Ligado | Desligado | Ciclo | Offset |
+Todos os ciclos usam `Time.timeSinceLevelLoad`, que zera quando a cena recarrega. Por isso, cada tentativa começa no mesmo ponto de todos os ciclos.
+
+| Armadilha | Posição | Ligado | Desligado | Ciclo | Offset |
 | --- | --- | --- | --- | --- | --- |
 | L1 calibração | (0; 0; 9) | 1,2 | 2,0 | 3,2 | 0,7 |
-| LA1 lento 1 | (−12; 0; 38) | 1,5 | 2,5 | 4,0 | 0,5 |
-| LA2 lento 2 | (−12; 0; 41) | 1,5 | 2,5 | 4,0 | 3,9 |
-| LB barreira | (4,5; 0; 45) | 4,2 | 0,8 | 5,0 | 1,3 |
-
-Serra: `period` 4 s; vai de x = −12,5 a x = −6 em 2 s e volta em 2 s, na linha z = 51,5. Espinhos da passagem: 1,0 s expostos e 2,0 s recolhidos (ciclo de 3 s).
-
-O ritmo usa `Time.time`, que não volta a zero quando a cena recarrega. Por isso, a fase de cada laser no momento do reinício muda de uma tentativa para outra, mas os ciclos e a defasagem entre lasers são sempre os mesmos. Não há sorteio.
+| LA1 lento 1 | (−12; 0,6; 37) | 1,5 | 2,5 | 4,0 | 0,5 |
+| LA2 lento 2 | (−12; 0,6; 40) | 1,5 | 2,5 | 4,0 | 3,9 |
+| LB barreira | (4,65; 1,5; 45) | 4,2 | 0,8 | 5,0 | 1,3 |
+| Serra da centrífuga | (−12,5; 1,4; 51,5), +5,5 m em X | — | — | 4,0 | — |
+| Espinhos da passagem | (−5,3; 1,4; 54) | 1,0 exposto | 2,0 recolhido | 3,0 | 0 |
 
 ## Truque de cenário: a passarela falsa
 
-Da triagem, a porta de conclusão aparece em linha reta pela abertura norte, ao fim de uma passarela de 2 × 14 m, e dois postes rosa a emolduram. É a ligação mais curta do mapa: cerca de 24,5 m de N6 até G. A passarela, porém, é piso falso (`CrumblingPlatform`, 0,8 s): treme ao ser pisada e cede.
+Da triagem, a porta aparece em linha reta pela abertura norte, no fim de uma passarela de 2 × 14 m entre duas estantes altas. É a ligação mais curta do mapa, mas a passarela é piso falso (`CrumblingPlatform`, 0,8 s), não tem luz nem arco, e a placa `SIGA AS LUZES` está ao lado da entrada.
 
-- **Por que não dá para atravessar:** depois do primeiro contato restam 0,8 s, ou seja, 4,0 m correndo. O máximo alcançável a partir da borda da triagem (z = 36) soma 0,6 m de *coyote time*, 3,3 m do pulo de entrada (no ar não conta como pisar), 4,0 m de corrida, 0,6 m de *coyote* quando o piso some, 3,2 m do pulo final (saindo 0,14 m abaixo) e cerca de 0,8 m de folga das bordas da cápsula. Isso dá z ≈ 48,5, e a sala final começa em z = 50. Sobram cerca de 1,5 m de margem contra o atalho.
-- **Por que é justo:** a Fase 1 já apresentou o chão falso (T0 do DS-14). O piso treme antes de cair, e a passarela fica no escuro, enquanto as rotas verdadeiras têm luminárias.
-- **O que ensina:** a menor distância no mapa não é uma aresta do grafo. O caminho de verdade passa pelas salas, e o jogador volta à triagem sabendo que precisa escolher uma rota.
+- **Por que não dá para atravessar.** O primeiro contato acontece no máximo em z ≈ 39,2, contando a borda da triagem (z 35), 0,28 m de borda, 0,6 m de *coyote* e um pulo de 3,32 m. A partir daí sobram 0,8 s, ou 4 m correndo (z 43,2). Depois vêm mais 0,6 m de *coyote* e um último pulo, que já sai 0,14 m abaixo e precisaria subir até a sala final (+0,8 m, alcance de 2,29 m). O total fica em z ≈ 46,4. A sala final começa em z = 50, então sobram cerca de 3,6 m contra o atalho. Encadear pulos não ajuda, porque o tempo conta a partir do primeiro contato.
+- **Por que não dá para trocar de rota no meio.** As estantes da passarela (linhas x = ±1,3; topo em y 5,0) separam a passarela da ponte leste (x ≥ 3,45). Assim, ninguém pula da passarela para depois do laser LB.
+- **Por que é justo.** O piso falso já apareceu nas Fases 1 e 3. Ele treme antes de cair, e a regra "luz e arco = caminho" vale em toda a fase.
 
 ## Pontos do grafo
 
-Coordenadas do ponto em que o jogador fica (x; y do piso; z), em metros. Elas são as mesmas do `Fase5Builder.cs`.
-
-| Ponto | Coordenadas | Referência no mapa |
+| Ponto | Coordenadas (x; y; z) | Referência |
 | --- | --- | --- |
-| N0 | (0; 0; −1) | Entrada / `Spawn`, recepção x[−4, 4] z[−4, 4] |
-| N1 | (0; 0; 7) | Corredor de calibração, antes do laser L1 (z = 9) |
-| N2 | (0; 0; 15,5) | Patamar das bancadas z[14, 16] |
-| N3 | (−0,75; 0,5; 18) | Bancada 1, z[17, 19], x[−2; 0,5] |
-| N4 | (0,75; 0,9; 21,5) | Bancada 2, z[20,5; 22,5], x[−0,5; 2] |
-| N5 | (0; 0; 26) | Patamar de saída z[24,5; 28] |
-| N6 | (0; 0; 32) | Sala de triagem x[−6, 6] z[28, 36]: **bifurcação** |
-| T0 | (0; 0; 43) | Passarela falsa x[−1, 1] z[36, 50] (**inseguro**) |
-| A1 | (−7,5; 0; 32) | Corredor oeste x[−9, −6] |
-| A2 | (−12; 0; 35) | Galeria de lasers, antes de LA1 (z = 38) |
-| A3 | (−12; 0; 39,5) | Entre LA1 e LA2 (z = 41) |
-| A4 | (−12; 0; 48) | Fim da galeria, ao sul da serra |
-| A5 | (−7; 0; 54) | Sala da centrífuga, ao norte da serra, antes dos espinhos (−4; 0; 54) |
-| B1 | (4,5; 0; 39) | Escudo, no corredor leste x[3, 6] |
-| B2 | (4,5; 0; 43,5) | Antes do laser da barreira LB (z = 45) |
-| B3 | (4,5; 0; 47) | Depois de LB |
-| B4 | (4,5; 0; 54) | Fim do corredor leste, diante do portal da sala final |
-| G1 | (0; 0; 54) | Sala final x[−3, 3] z[50, 58] |
-| G | (0; 0; 56,5) | Porta de conclusão (`Goal`) |
+| N0 | (0; 0; −1,5) | *Spawn*, recepção x[−4, 4] z[−4, 4] |
+| N1 | (0; 0; 7) | Corredor de calibração, antes de L1 |
+| N2 | (0; 0; 15) | Patamar das bancadas z[14, 16] |
+| N3 | (−0,75; 0,5; 18) | Bancada 1 (pilha de livros) x[−2; 0,5] z[17, 19] |
+| N4 | (0,75; 1,0; 21,5) | Bancada 2 x[−0,5; 2] z[20,5; 22,5] |
+| N5 | (−0,5; 1,5; 25) | Bancada 3 (livro aberto) x[−2, 1] z[24, 26] |
+| N6 | (0; 1,5; 31) | Sala de triagem x[−6, 6] z[27, 35]: **bifurcação** |
+| T0 | (0; 1,5; 42) | Passarela falsa x[−1, 1] z[35, 49] (**inseguro**) |
+| A1 | (−7,5; 1,5; 31,5) | Corredor oeste x[−9, −6] z[30, 33] |
+| A2 | (−12; 0,6; 34) | Galeria, antes de LA1 |
+| A3 | (−12; 0,6; 38,5) | Entre LA1 e LA2 |
+| A4 | (−12; 0,6; 47) | Fim da galeria (z até 48,5) |
+| A5 | (−8; 1,4; 54) | Sala da centrífuga, ao norte da serra, diante da passagem |
+| A6 | (−3,7; 1,4; 54) | Passagem de amostras, depois dos espinhos |
+| B1 | (4,65; 1,5; 37,5) | Escudo, na ponte de livros x[3,45; 5,85] z[35, 42] |
+| B2 | (4,65; 1,5; 43,5) | Antes da barreira LB |
+| B3 | (4,65; 1,5; 47) | Depois de LB (a ponte acaba em z 48) |
+| B4 | (4,5; 1,9; 54) | Patamar leste x[3, 6] z[50, 57] |
+| G1 | (0; 2,3; 54) | Livro aberto da sala final x[−3, 3] z[50, 58] |
+| G | (0; 2,3; 56,5) | Porta de conclusão (`Goal`, yaw 0) |
 
-Zona de queda: y = −8. Ela fica sob o fosso das bancadas, o vão do corredor oeste e a passarela falsa.
+Zona de queda: y = −8.
+
+## Plataformas (topo em Y)
+
+| Peça | Tipo | Centro do topo | Tamanho X × Z |
+| --- | --- | --- | --- |
+| Piso Recepção | `Platform` | (0; 0; 0) | 8 × 8 |
+| Corredor de calibração | `Platform` | (0; 0; 9) | 3 × 10 |
+| Patamar das bancadas | `Platform` | (0; 0; 15) | 6 × 2 |
+| Bancada 1 | `BookPlatform` | (−0,75; 0,5; 18) | 2,5 × 2 |
+| Bancada 2 | `BookPlatform` | (0,75; 1,0; 21,5) | 2,5 × 2 |
+| Bancada 3 | `OpenBookPlatform` | (−0,5; 1,5; 25) | 3 × 2 |
+| Triagem | `Platform` | (0; 1,5; 31) | 12 × 8 |
+| Passarela falsa | `CrumblingPlatform` | (0; 1,5; 42) | 2 × 14 |
+| Corredor oeste | `Platform` | (−7,5; 1,5; 31,5) | 3 × 3 |
+| Galeria de lasers | `Platform` | (−12; 0,6; 39,25) | 3 × 18,5 |
+| Sala da centrífuga | `Platform` | (−10; 1,4; 53,5) | 7 × 9 |
+| Passagem de amostras | `Platform` | (−4,75; 1,4; 54) | 3,5 × 2 |
+| Ponte do escudo | `BookPlatform` | (4,65; 1,5; 38,5) | 2,4 × 7 |
+| Ponte da barreira | `Platform` | (4,65; 1,5; 45) | 2,4 × 6 |
+| Patamar leste | `BookPlatform` | (4,5; 1,9; 53,5) | 3 × 7 |
+| Livro aberto da conclusão | `OpenBookPlatform` | (0; 2,3; 54) | 6 × 8 |
 
 ## Grafo das rotas
 
@@ -71,27 +102,28 @@ Zona de queda: y = −8. Ela fica sob o fosso das bancadas, o vão do corredor o
 flowchart LR
     N0["N0 entrada"] -->|andar| N1["N1 antes de L1"]
     N1 -->|janela L1| N2["N2 patamar"]
-    N2 -->|pulo 1,0 m, sobe 0,5| N3["N3 bancada 1"]
-    N3 -->|pulo 1,5 m, sobe 0,4| N4["N4 bancada 2"]
-    N4 -->|pulo 2,0 m, desce 0,9| N5["N5 patamar de saída"]
-    N5 -->|andar| N6{"N6 triagem"}
+    N2 -->|pulo 1,0 m, +0,5| N3["N3 bancada 1"]
+    N3 -->|pulo 1,5 m, +0,5| N4["N4 bancada 2"]
+    N4 -->|pulo 1,5 m, +0,5| N5["N5 livro aberto"]
+    N5 -->|pulo 1,0 m| N6{"N6 triagem"}
 
     N6 -.->|andar: piso falso cede| T0["T0 passarela falsa"]
     T0 -.->|queda| R(["reinício"])
 
     N6 -->|andar| A1["A1 corredor oeste"]
-    A1 -->|pulo 1,5 m| A2["A2 antes de LA1"]
+    A1 <-->|"pulo 1,5 m, −0,9 / +0,9"| A2["A2 antes de LA1"]
     A2 -->|janela LA1| A3["A3 entre lasers"]
-    A3 -->|janela LA2| A4["A4 sul da serra"]
-    A4 -->|janela da serra| A5["A5 norte da serra"]
-    A5 -->|janela dos espinhos| G1["G1 sala final"]
+    A3 -->|janela LA2| A4["A4 fim da galeria"]
+    A4 -->|"pulo 0,5 m, +0,8; janela da serra"| A5["A5 norte da serra"]
+    A5 -->|janela dos espinhos| A6["A6 depois dos espinhos"]
+    A6 -->|degrau +0,9| G1
 
     N6 -->|andar| B1["B1 escudo"]
     B1 -->|andar| B2["B2 antes de LB"]
     B2 ==>|escudo: atravessa LB e o gasta| B3["B3 depois de LB"]
     B2 -->|sem escudo: janela de 0,8 s| B3
-    B3 -->|andar| B4["B4 corredor leste"]
-    B4 -->|andar| G1
+    B3 -->|pulo 2,0 m, +0,4| B4["B4 patamar leste"]
+    B4 -->|degrau +0,4| G1["G1 livro aberto"]
     G1 -->|andar| G(["G conclusão"])
 
     style T0 fill:#f8cccc,stroke:#bb3333
@@ -100,72 +132,53 @@ flowchart LR
     style G fill:#d4f0cc,stroke:#3c8a3a
 ```
 
-Tipos de aresta: **andar** (sem risco); **pulo** (vão e desnível indicados); **janela** (esperar o perigo se desligar ou se afastar; tocar reinicia a fase); **escudo** (atravessa a armadilha sem esperar e consome o escudo). Toda aresta de pulo também leva à queda e ao reinício se o pulo falhar; essas arestas foram omitidas do diagrama.
+O estado da busca é **(ponto, tem escudo)**. A aresta "escudo" de B2 → B3 só existe com o escudo e leva a um estado sem escudo. A aresta pela janela existe sempre, então a fase tem solução sem o poder. Toda aresta de pulo também leva à queda e ao reinício se o pulo falhar; essas arestas foram omitidas do diagrama.
 
-Se o grafo for buscado como no DS-14, o estado é **(ponto, tem escudo)**. A aresta B2 → B3 "escudo" só existe nos estados com escudo e leva a um estado sem escudo. A outra aresta B2 → B3 (janela) existe sempre, então a fase tem solução mesmo sem escudo.
+### Comparação das rotas
 
-### Comparação das rotas (de N6 até G)
+As distâncias são horizontais, ponto a ponto. O trecho comum (N0 → N6) mede 33,2 m.
 
-As distâncias são horizontais, ponto a ponto. O tempo considera corrida a 5 m/s.
-
-| Rota | Caminho | Arestas | Distância | Arestas com espera | Tempo |
+| Rota | Caminho a partir de N6 | Distância de N6 a G | Total | Esperas | Risco |
 | --- | --- | --- | --- | --- | --- |
-| **Curta com escudo** | N6 → B1 → B2 → B3 → B4 → G1 → G | 6 | 30,3 m | 0 | **≈ 6,1 s** |
-| Curta sem escudo | mesma, pela janela de LB | 6 | 30,3 m | 1 (LB) | 6,1 a 10,5 s |
-| Segura (longa) | N6 → A1 → A2 → A3 → A4 → A5 → G1 → G | 7 | 43,2 m | 4 (LA1, LA2, serra, espinhos) | 8,6 a 13,5 s |
-| Passarela (truque) | N6 → T0 ⇢ G1 | — | ≈ 24,5 m | — | sem solução: T0 → G1 não existe |
+| **Curta** (leste) | B1 → B2 → B3 → B4 → G1 → G | 31,5 m | **≈ 64,7 m** | LB (até 4,2 s) ou nenhuma, com escudo | Ponte de 2,4 m sem parede e vão de 2 m sobre o vazio. Errar a janela sem escudo mata. |
+| Segura (oeste) | A1 → A2 → A3 → A4 → A5 → A6 → G1 → G | 44,1 m | **≈ 77,3 m** | LA1/LA2, serra, espinhos (≈ 1,5 s cada no pior caso) | Todos os pulos têm mais de 0,85 m de margem, e as janelas são longas. |
+| Passarela (truque) | T0 ⇢ G1 | ≈ 24,5 m | — | — | Sem solução: T0 → G1 não existe. |
 
-A **rota mais curta** da fase inteira é `N0 → N1 → N2 → N3 → N4 → N5 → N6 → B1 → B2 → B3 → B4 → G1 → G`: 12 arestas e ≈ 63,8 m (33,5 m no trecho comum mais 30,3 m). Pela rota segura são 13 arestas e ≈ 76,7 m. As duas ficam dentro da faixa de 45 a 80 m pedida.
+## Cálculo dos pulos
 
-Como foram calculadas as esperas no pior caso:
+Motor: pulo de 1,1 m, gravidade −20 m/s², v₀ = √(2·20·1,1) = 6,633 m/s, corrida a 5 m/s, cápsula de 1,76 m de altura e 0,28 m de raio. O tempo para pousar com desnível h é t = (v₀ + √(v₀² − 40h)) / 20, e o alcance correndo é 5·t. Limites do doc: vão seguro ≤ 2,8 m no plano e degrau ≤ 0,9 m.
 
-- **LA1 + LA2:** espera até 1,5 s em LA1 (mais 0,16 s de travessia). Correndo, LA2 já estará desligado.
-- **Serra:** passando por x = −12, a lâmina fica longe (centro em x ≥ −10,94) durante 2,72 s dos 4 s do ciclo. A travessia dura 0,42 s, então a espera máxima é ≈ 1,7 s.
-- **Espinhos:** ficam expostos 1,0 s e recolhidos 2,0 s, e a travessia leva 0,47 s, então a espera máxima é ≈ 1,5 s.
-- **LB sem escudo:** espera até 4,2 s, e a janela útil é 0,8 − 0,16 = 0,64 s.
+| Pulo | Vão | Desnível | Alcance correndo | Margem |
+| --- | --- | --- | --- | --- |
+| N2 → N3 | 1,0 m (z 16 → 17) | +0,5 | 2,88 m | **1,88 m** |
+| N3 → N4 | 1,5 m (z 19 → 20,5) | +0,5 | 2,88 m | **1,38 m** |
+| N4 → N5 | 1,5 m (z 22,5 → 24) | +0,5 | 2,88 m | **1,38 m** |
+| N5 → N6 | 1,0 m (z 26 → 27) | 0 | 3,32 m | **2,32 m** |
+| A1 → A2 (descida) | 1,5 m (x −9 → −10,5) | −0,9 | 3,89 m | **2,39 m** |
+| A2 → A1 (volta) | 1,5 m | +0,9 | 2,36 m | **0,86 m** |
+| A4 → sala da centrífuga | 0,5 m (z 48,5 → 49) | +0,8 | 2,52 m | **2,02 m** |
+| A6 → G1 | 0 (encostado) | +0,9 | apogeu 1,1 m | 0,2 m de altura |
+| **B3 → B4** | 2,0 m (z 48 → 50) | +0,4 | 2,98 m | **0,98 m** |
+| B4 → G1 | 0 (encostado) | +0,4 | apogeu 1,1 m | 0,7 m de altura |
 
-## Cálculo dos pulos e das janelas
+Nas bancadas, as pilhas vizinhas se sobrepõem em X: 1 m entre as Bancadas 1 e 2 e 1,5 m entre a 2 e a 3. Assim, todos os pulos são retos em Z. O vão mais difícil da fase (B3 → B4, margem de 0,98 m) fica na rota arriscada, logo depois do laser difícil.
 
-Motor (`CharacterMotor` + prefab): pulo de 1,1 m, gravidade de −20 m/s², velocidade inicial do pulo v₀ = √(2·20·1,1) = 6,633 m/s, corrida a 5 m/s e caminhada a 2,2 m/s. A cápsula tem 1,76 m de altura e 0,28 m de raio.
+## Janelas das armadilhas
 
-O tempo de voo até cair na altura h (h > 0 sobe, h < 0 desce) é t = (v₀ + √(v₀² − 40h)) / 20, e o alcance é igual a 5·t.
+- **L1:** fica 2,0 s desligado, e a travessia do feixe (0,25 + 0,56 = 0,81 m) leva 0,16 s correndo ou 0,37 s andando.
+- **Onda LA1/LA2:** τ = (t + 0,5) mod 4. LA1 fica desligado em τ ∈ [1,5; 4,0) e LA2 em τ ∈ [2,1; 4,6). Correndo os 3 m entre eles (0,6 s), é possível entrar em LA1 com τ entre 1,5 e 3,84: são 2,34 s de janela para os dois. Andando, o intervalo cai para τ ∈ [1,5; 2,87]. Entre os lasers há 2,2 m livres para parar.
+- **Serra da centrífuga:** o centro vai de x −12,5 a −7,0 (SmoothStep, 2 s em cada sentido) e a esfera tem 0,78 m de raio. Por isso ela varre a sala inteira, que tem faces internas em −13,35 e −6,5. A faixa de perigo em Z vai de 50,44 a 52,56. Atravessando em x = −12, logo na saída da galeria, a serra fere enquanto o centro está a oeste de −10,94, o que dá 1,40 s por ciclo. Sobram **2,60 s livres**, e a travessia leva 0,42 s.
+- **Espinhos da passagem:** a caixa de 1,8 × 1,8 m cobre os 2 m entre as estantes, deixando 0,1 m de cada lado (menos que o raio do jogador). Para cruzar, é preciso percorrer 2,36 m; o pulo só fica acima de 0,65 m por 2,1 m, então não dá para saltar. Eles ficam 2,0 s recolhidos contra 0,47 s de travessia. Depois dos espinhos sobram 1,4 m livres antes do degrau de 0,9 m.
+- **LB:** fica 0,8 s desligado (0,4 s sem feixe e 0,4 s piscando) contra 0,16 s de travessia. A ponte tem 2,4 m e o feixe 2,7 m, então o feixe passa 0,15 m de cada lado. Para contorná-lo, o centro do jogador teria de ficar a 0,43 m da borda, no ar, sobre o vazio. Com o Escudo, o toque é absorvido e há 1 s de graça para sair do feixe.
 
-| Pulo | Vão | Desnível | Tempo de voo | Alcance correndo | Margem | Andando |
-| --- | --- | --- | --- | --- | --- | --- |
-| N2 → N3 (patamar → bancada 1) | 1,0 m (z 16 → 17) | +0,5 m | 0,577 s | 2,88 m | **1,88 m** | 1,27 m (margem de 0,27) |
-| N3 → N4 (bancada 1 → 2) | 1,5 m (z 19 → 20,5) | +0,4 m | 0,596 s | 2,98 m | **1,48 m** | 1,31 m: precisa correr |
-| N4 → N5 (bancada 2 → saída) | 2,0 m (z 22,5 → 24,5) | −0,9 m | 0,779 s | 3,89 m | **1,89 m** | 1,71 m: precisa correr |
-| A1 → A2 (corredor oeste → galeria) | 1,5 m (x −9 → −10,5) | 0 | 0,663 s | 3,32 m | **1,82 m** | 1,46 m: precisa correr |
+## Cenário (fora do volume jogável)
 
-Todos os vãos ficam abaixo do limite seguro de 2,8 m, e nenhum degrau passa de 0,9 m. As bancadas 1 e 2 se sobrepõem em x[−0,5; 0,5], o que permite pular reto em z. O desnível de 0,4 m é menor que a altura do pulo (1,1 m), então a borda da bancada 2 é alcançada ainda na subida.
-
-Janelas dos lasers. A cápsula fica dentro do feixe enquanto |z − z_laser| < 0,125 + 0,28. São 0,81 m de travessia, ou 0,16 s correndo (0,37 s andando).
-
-- **Onda LA1/LA2:** τ = (t + 0,5) mod 4. LA1 fica desligado em τ ∈ [1,5; 4,0), e LA2 em τ ∈ [2,1; 4,6). Correndo (3 m em 0,6 s), é possível entrar em LA1 em qualquer τ ∈ [1,5; 3,84], ou seja, 2,34 s de janela para os dois lasers seguidos. Andando, o intervalo é τ ∈ [1,5; 2,87] (1,37 s). Entre os lasers há 2,75 m livres para parar e esperar.
-- **L1:** 2,0 s desligado contra 0,16 s de travessia.
-- **LB:** 0,8 s desligado, sendo 0,4 s sem feixe e 0,4 s piscando, contra 0,16 s de travessia. É o laser difícil.
-
-Outros perigos:
-
-- **Serra:** esfera de 0,78 m de raio entre y 0,07 e 1,63, alta demais para pular. Varre x[−13,28; −5,22], quase a sala inteira (faces internas em −13,35 e −5,15). Por isso, a passagem precisa ser cronometrada.
-- **Espinhos:** caixa de 1,8 × 1,8 m entre y 0,05 e 0,65, cobrindo os 1,7 m livres da passagem (paredes em z 53 e 55). Para atravessar, a cápsula percorre 1,8 + 0,56 = 2,36 m. Um pulo correndo só fica acima de 0,65 m por 2,1 m, então não dá para pular por cima: é preciso esperar os espinhos recolherem.
-
-## Seções
-
-1. Recepção: entrada, placa "FASE 5 - LABORATORIO" e pufe.
-2. Corredor de calibração: laser L1 e placa "OBSERVE O RITMO".
-3. Sala das bancadas: três pulos sobre o fosso.
-4. Sala de triagem: bifurcação.
-5. Passarela falsa: o truque.
-6. Corredor oeste: vão de 1,5 m.
-7. Galeria de lasers: LA1 e LA2 em onda.
-8. Sala da centrífuga: serra.
-9. Passagem de amostras: espinhos em ciclo.
-10. Corredor do escudo: Escudo e placa "ESCUDO = 1 TOQUE".
-11. Barreira: laser LB.
-12. Sala final: porta de conclusão.
+- Estantes sólidas (`Bookshelf`, 0,6 m) são todas as paredes, com topo pelo menos 2,7 m acima do piso vizinho, de modo que nenhuma pode ser escalada. As do fosso e da passarela descem até o abismo.
+- Os abajures ficam sobre o topo das estantes (y = base + 3,5) ou em cantos de sala, a pelo menos 1,5 m da linha da rota. As mesas de pesquisa (`ReadingDesk`) ficam nos cantos da recepção, junto à parede sul da triagem e no canto noroeste da centrífuga.
+- Livros flutuando e partículas rosa ficam **abaixo** das bancadas, no fosso (y −4 a −1). A escada de biblioteca some no fosso (topo em y −0,5). As páginas flutuam sobre a porta (y ≥ 6,8), a leste da ponte (1,85 m de folga lateral) e nos livros altos (y ≥ 6).
+- `LibraryBackdrop` envolve o retângulo x[−14, 7] × z[−4,5; 58,5] (base −6, altura 14, margem 6).
 
 ## Pendências
 
-- **Escudo contra armadilhas de contato contínuo:** `Hazard` também reage em `OnTriggerStay`, e `PlayerShield.TryAbsorb` destrói o escudo no primeiro contato. Atravessar o feixe leva cerca de 0,16 s, ou seja, vários passos de física, e o passo seguinte já encontra o jogador sem escudo e reinicia a fase. Para a aresta "escudo" de B2 → B3 funcionar, o escudo precisa dar alguns décimos de segundo de invulnerabilidade ou ignorar a armadilha até o jogador sair do colisor. Enquanto isso não for corrigido, a fase continua com solução pela janela de LB e pela rota segura.
-- **Playtest:** falta validar na Unity os tamanhos de texto das placas e a leitura do piso falso sob a iluminação do tema.
+- *Playtest*: altura das placas, leitura da passarela escura sob o tema rosa e se o vão de 2 m da ponte, logo depois do laser difícil, está duro demais.
+- Os postes do laser (±1,5 m) ficam encostados nas estantes, e na ponte ficam 0,15 m para fora dos livros. Isso é só visual.
