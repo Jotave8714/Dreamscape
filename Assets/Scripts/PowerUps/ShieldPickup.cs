@@ -6,7 +6,15 @@ namespace Dreamscape.PowerUps
     /// <summary>Escudo: absorve o próximo contato com uma armadilha (<see cref="Dreamscape.Hazards.Hazard"/>).</summary>
     public sealed class ShieldPickup : PowerUpPickup
     {
-        protected override void Apply(CharacterMotor motor) => PlayerShield.Grant(motor.gameObject);
+        public override string DisplayName => "ESCUDO";
+        public override Color DisplayColor => new Color(0.45f, 1f, 0.6f);
+
+        public override void Apply(CharacterMotor motor) => PlayerShield.Grant(motor.gameObject);
+
+        public override void Remove(CharacterMotor motor) => PlayerShield.Revoke(motor.gameObject);
+
+        // o escudo acaba antes do tempo quando absorve um golpe
+        public override bool IsActive(CharacterMotor motor) => motor.TryGetComponent(out PlayerShield _);
     }
 
     /// <summary>Estado do escudo no jogador. Some ao absorver um golpe ou ao recarregar a cena.</summary>
@@ -16,6 +24,12 @@ namespace Dreamscape.PowerUps
         {
             if (!player.TryGetComponent(out PlayerShield _))
                 player.AddComponent<PlayerShield>();
+        }
+
+        public static void Revoke(GameObject player)
+        {
+            if (player.TryGetComponent(out PlayerShield shield))
+                Destroy(shield);
         }
 
         const float GraceSeconds = 1f;
