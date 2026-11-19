@@ -1,6 +1,13 @@
 {
     "name": "Dreamscape.Editor",
     "rootNamespace": "Dreamscape.EditorTools",
-    "references": ["Dreamscape.Runtime", "Unity.InputSystem"],
-    "includePlatforms": ["Editor"]
+    "references": [
+        "Dreamscape.Runtime",
+        "Unity.InputSystem",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ]
 }
