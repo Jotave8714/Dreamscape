@@ -18,6 +18,9 @@ public sealed class DreamscapePresentationWindow : EditorWindow
             if (GUILayout.Button("Jogar apresentação de cinco fases"))
                 OpenScene("Dreamscape_CincoFases");
 
+            if (GUILayout.Button("Jogo atualizado do grupo — menu principal"))
+                OpenScene("MainMenu");
+
             if (GUILayout.Button("Rascunhos das fases 1 e 2"))
                 OpenScene("Apresentacao_DuasFases");
 
