@@ -124,7 +124,7 @@ namespace Dreamscape.Tests
         public IEnumerator FirstExitLoadsSecondPhaseWithFreshPlayerAndCheckpoint()
         {
             yield return Load(FirstPhase);
-            yield return Collect<DoubleJumpPickup>();
+            yield return Collect<Dreamscape.PowerUps.DoubleJumpPickup>();
             Assert.That(PlayerMotor().MaxAirJumps, Is.EqualTo(1));
             PlayerMotor().Teleport(ExitPosition(), Quaternion.identity);
             yield return WaitForScene(SecondPhase);
