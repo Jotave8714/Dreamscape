@@ -1,4 +1,5 @@
 using Dreamscape.Characters;
+using Dreamscape.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,11 +15,18 @@ namespace Dreamscape
             GetComponent<BoxCollider>().isTrigger = true;
         }
 
-        private void OnTriggerEnter(Collider other)
+        private void Awake() => GetComponent<BoxCollider>().isTrigger = true;
+
+        private void OnTriggerEnter(Collider other) => TryRestart(other);
+
+        private void OnTriggerStay(Collider other) => TryRestart(other);
+
+        private void TryRestart(Collider other)
         {
-            if (restarting || !other.GetComponentInParent<PlayerInputController>())
+            if (restarting || GamePause.IsPaused || !other.GetComponentInParent<PlayerInputController>())
                 return;
 
+            restarting = true;
             var scene = gameObject.scene;
             if (scene.buildIndex < 0)
             {
@@ -26,7 +34,6 @@ namespace Dreamscape
                 return;
             }
 
-            restarting = true;
             SceneManager.LoadScene(scene.buildIndex, LoadSceneMode.Single);
         }
     }

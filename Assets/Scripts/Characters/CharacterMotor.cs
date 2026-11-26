@@ -157,7 +157,7 @@ namespace Dreamscape.Characters
         /// <summary>Escala a gravidade da queda (power-up Pluma). O impulso do pulo não muda, então o salto fica mais longo.</summary>
         public void SetGravityScale(float scale) => gravityScale = Mathf.Clamp(scale, 0.1f, 1f);
 
-        /// <summary>Move instantaneamente (checkpoints, cutscenes, Moema alcançando o jogador).</summary>
+        /// <summary>Move instantaneamente e reinicia o estado do pulo, preservando os power-ups.</summary>
         public void Teleport(Vector3 position, Quaternion rotation)
         {
             controller.enabled = false;
@@ -165,6 +165,11 @@ namespace Dreamscape.Characters
             controller.enabled = true;
             horizontalVelocity = Vector3.zero;
             verticalVelocity = 0f;
+            jumpRequestedAt = float.NegativeInfinity;
+            lastGroundedAt = float.NegativeInfinity;
+            airJumpsUsed = 0;
+            IsGrounded = false;
+            wasGrounded = false;
             Physics.SyncTransforms();
         }
 
@@ -176,7 +181,6 @@ namespace Dreamscape.Characters
             if (dt <= 0f)
                 return;
 
-            IsGrounded = controller.isGrounded;
             if (IsGrounded)
             {
                 lastGroundedAt = Time.time;
