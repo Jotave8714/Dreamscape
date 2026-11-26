@@ -26,7 +26,7 @@ A primeira execução PlayMode, sem dispositivo gráfico, passou em 55/57: falha
 
 ## Limites de aceite
 
-Não houve playtest humano cego, avaliação auditiva da equipe nem execução no Windows da apresentação. Os resultados de passos simulados não são medições de FPS renderizado. DS-19 recebeu aceite expresso do solicitante; DS-22 exige abertura e percurso no computador da apresentação e confirmação das dependências DS-20/DS-21. Esses requisitos permanecem explícitos no Trello, sem marcar trabalho não verificado como concluído.
+Não houve playtest humano cego, avaliação auditiva da equipe nem execução no Windows da apresentação. Os resultados de passos simulados não são medições de FPS renderizado. DS-19 recebeu aceite expresso do solicitante; Com autorização expressa do solicitante, o DS-22 foi encerrado como preparação da entrega. A abertura e o percurso no computador da apresentação, as confirmações humanas das dependências DS-20/DS-21 e a reserva em outro dispositivo foram transferidos ao card QA-WIN: https://trello.com/c/A4xw82bp. Esses testes permanecem pendentes; não foram declarados como executados.
 
 ## Roteiro para o Windows da apresentação
 
@@ -42,7 +42,7 @@ A Fase 18 também pode ser aberta diretamente no Editor pela cena `Assets/Scenes
 
 ## Sincronização dos cards implementados nos PRs
 
-DS-14 e DS-15 foram encerrados com base nas aprovações formais dos PRs #17/#18 e nas regressões atuais. Em 25/11 o usuário confirmou que não há exigência acadêmica adicional ao GDD. DS-19 foi encerrado com aceite expresso do solicitante; DS-22 depende do computador Windows, disponível depois. O novo trabalho está no PR #49, em rascunho.
+DS-14 e DS-15 foram encerrados com base nas aprovações formais dos PRs #17/#18 e nas regressões atuais. Em 25/11 o usuário confirmou que não há exigência acadêmica adicional ao GDD. DS-19 foi encerrado com aceite expresso do solicitante; DS-22 foi encerrado como preparação após o usuário autorizar o desmembramento do teste Windows para o card QA-WIN. O novo trabalho está no PR #49, em rascunho.
 
 A demonstração macOS ARM64 0.2.0-preview.18 abriu nativamente. O player registra avisos URP de shaders de profundidade de campo e Panini; esses passes de pós-processamento não executam. Abertura nativa não equivale a playtest manual. A inspeção preservou e restaurou o progresso anterior.
 
@@ -58,3 +58,9 @@ Todos compilados com zero erros e dois avisos. ZIPs passaram na verificação CR
 | `Dreamscape-0.2.0-preview.18-Windows-x64.zip` | `phase18` | 3 | `6505d8acf82aca055ede4b26fe6d5ecf214a11f9712aecf7d74df6ac1b229535` |
 
 Candidatas em `Builds/DS22/Candidates/` e `Builds/Fase18/Candidates/`; reservas nas pastas `Backup/` correspondentes. Verificação detalhada: `Logs/DS22/package-validation-current.json`. A demonstração inicia diretamente a Fase 18 pelo botão Novo Jogo. O protótipo preserva a entrega original com duas fases.
+
+## Aceite e disponibilização
+
+O solicitante autorizou expressamente “Encerrar preparação e separar teste Windows”. O DS-22 foi renomeado para preparação da candidata e pacote de entrega, seu checklist foi ajustado ao escopo aceito e o card foi concluído. O teste no computador da apresentação segue em [QA-WIN](https://trello.com/c/A4xw82bp), com checklist próprio e sem revisor ou data de acesso inventados. DS-14, DS-15, DS-19 e DS-22 estão concluídos; os demais cards de Nelson já estavam concluídos.
+
+Os quatro arquivos foram enviados ao [rascunho de release](https://github.com/Jotave8714/Dreamscape/releases/tag/untagged-7b7ba783f2e8eb37c339). Os digests SHA-256 retornados pelo GitHub coincidem com os arquivos locais. A release permanece em rascunho; não houve publicação de entrega final. PR de código e documentação: [#49](https://github.com/Jotave8714/Dreamscape/pull/49).
