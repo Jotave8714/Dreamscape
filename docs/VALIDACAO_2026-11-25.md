@@ -26,7 +26,7 @@ A primeira execução PlayMode, sem dispositivo gráfico, passou em 55/57: falha
 
 ## Limites de aceite
 
-Não houve playtest humano cego, avaliação auditiva da equipe nem execução no Windows da apresentação. Os resultados de passos simulados não são medições de FPS renderizado. DS-19 exige revisão cruzada; DS-22 exige abertura e percurso no computador da apresentação e confirmação das dependências DS-20/DS-21. Esses requisitos permanecem explícitos no Trello, sem marcar trabalho não verificado como concluído.
+Não houve playtest humano cego, avaliação auditiva da equipe nem execução no Windows da apresentação. Os resultados de passos simulados não são medições de FPS renderizado. DS-19 recebeu aceite expresso do solicitante; DS-22 exige abertura e percurso no computador da apresentação e confirmação das dependências DS-20/DS-21. Esses requisitos permanecem explícitos no Trello, sem marcar trabalho não verificado como concluído.
 
 ## Roteiro para o Windows da apresentação
 
@@ -42,4 +42,19 @@ A Fase 18 também pode ser aberta diretamente no Editor pela cena `Assets/Scenes
 
 ## Sincronização dos cards implementados nos PRs
 
-DS-14 e DS-15 foram encerrados com base nas aprovações formais dos PRs #17/#18 e nas regressões atuais. Em 25/11 o usuário confirmou que não há exigência acadêmica adicional ao GDD. DS-19 permanece em revisão cruzada; DS-22 depende do computador Windows, disponível depois. O novo trabalho está no PR #49, em rascunho.
+DS-14 e DS-15 foram encerrados com base nas aprovações formais dos PRs #17/#18 e nas regressões atuais. Em 25/11 o usuário confirmou que não há exigência acadêmica adicional ao GDD. DS-19 foi encerrado com aceite expresso do solicitante; DS-22 depende do computador Windows, disponível depois. O novo trabalho está no PR #49, em rascunho.
+
+A demonstração macOS ARM64 0.2.0-preview.18 abriu nativamente. O player registra avisos URP de shaders de profundidade de campo e Panini; esses passes de pós-processamento não executam. Abertura nativa não equivale a playtest manual. A inspeção preservou e restaurou o progresso anterior.
+
+## Pacotes verificados
+
+Todos compilados com zero erros e dois avisos. ZIPs passaram na verificação CRC; cada reserva é idêntica por SHA-256. Arquiteturas conferidas: PE x86-64 no Windows e Mach-O ARM64 no macOS. Nenhuma assembly de testes ou NUnit foi distribuída. Origem do código: `acafd94d3f7c726bcdbeaf10f99c3e85fcb6bc38`.
+
+| Pacote | Escopo | Cenas | SHA-256 |
+| --- | --- | --- | --- |
+| `Dreamscape-0.2.0-preview.18-macOS-ARM64.zip` | `phase18` | 3 | `0289e3f2005093ce7783a8d7245eef8ba0835c1bc7650cb2df31b07161e97b95` |
+| `Dreamscape-0.2.0-rc.1-Windows-x64.zip` | `full` | 20 | `6c564b4342b8586b4ab7cfbf62e690667f0ea220451b5de1b0c9f548de05248f` |
+| `Dreamscape-0.1.0-rc.1-Windows-x64.zip` | `prototype` | 4 | `3a593d3fc143d330287afb90e14fd665a7f9c5dcdff864fba0abcff6bde29234` |
+| `Dreamscape-0.2.0-preview.18-Windows-x64.zip` | `phase18` | 3 | `6505d8acf82aca055ede4b26fe6d5ecf214a11f9712aecf7d74df6ac1b229535` |
+
+Candidatas em `Builds/DS22/Candidates/` e `Builds/Fase18/Candidates/`; reservas nas pastas `Backup/` correspondentes. Verificação detalhada: `Logs/DS22/package-validation-current.json`. A demonstração inicia diretamente a Fase 18 pelo botão Novo Jogo. O protótipo preserva a entrega original com duas fases.
