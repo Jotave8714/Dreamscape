@@ -16,7 +16,7 @@ namespace Dreamscape.EditorTools
 
         public static string[] SelectScenes(string[] configured, string scope)
         {
-            if (scope != "full" && scope != "prototype")
+            if (scope != "full" && scope != "prototype" && scope != "phase18")
                 throw new ArgumentException("DS-22: escopo inválido: " + scope);
             if (configured.Length < 4 || configured[0] != Menu || configured[1] != First ||
                 configured[2] != Second || configured[configured.Length - 1] != Ending ||
@@ -27,6 +27,13 @@ namespace Dreamscape.EditorTools
                 string name = Path.GetFileNameWithoutExtension(configured[i]);
                 if (!name.StartsWith($"Fase{i}_", StringComparison.Ordinal))
                     throw new InvalidOperationException($"DS-22: fase {i} ausente ou fora de ordem: {configured[i]}.");
+            }
+            if (scope == "phase18")
+            {
+                string garden = "Assets/Scenes/Fase18_JardimDasEntrelinhas.unity";
+                if (!configured.Contains(garden))
+                    throw new InvalidOperationException("DS-22: a Fase 18 não está no perfil de build.");
+                return new[] { Menu, garden, Ending };
             }
             return scope == "prototype" ? new[] { Menu, First, Second, Ending } : configured;
         }

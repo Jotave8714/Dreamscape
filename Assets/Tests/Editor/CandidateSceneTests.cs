@@ -31,6 +31,16 @@ namespace Dreamscape.Tests
         }
 
         [Test]
+        public void GardenDemoStartsTheNewPhaseDirectly()
+        {
+            Assert.That(CandidateBuild.SelectScenes(Scenes, "phase18"), Is.EqualTo(new[]
+            {
+                "Assets/Scenes/MainMenu.unity", "Assets/Scenes/Fase18_JardimDasEntrelinhas.unity",
+                "Assets/Scenes/PrototypeEnding.unity"
+            }));
+        }
+
+        [Test]
         public void MissingEndingIsRejectedBeforeBuilding()
         {
             Assert.Throws<InvalidOperationException>(() => CandidateBuild.SelectScenes(Scenes.Take(Scenes.Length - 1).ToArray(), "full"));

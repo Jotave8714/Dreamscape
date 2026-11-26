@@ -14,7 +14,7 @@ Extraia o arquivo `.tar.gz` preservando as permissões e execute `./Dreamscape.x
 
 Extraia o ZIP inteiro e abra `Dreamscape.app`. A versão local validada usa macOS ARM64 (Apple Silicon). O aplicativo não foi assinado com Developer ID nem notarizado para distribuição; a abertura em outros computadores ainda precisa ser verificada.
 
-O jogo inicia pelo menu. Novo Jogo começa na Fase 1; Continuar retoma a entrada da fase salva. O campo `scope` em `manifest.json` identifica o pacote: `prototype` contém as Fases 1 e 2 e termina após a segunda; `full` contém a campanha de 18 fases e termina após o Jardim das Entrelinhas. Jogar Novamente inicia uma partida com os poderes no estado inicial. Os poderes duram 30 segundos e seus coletáveis reaparecem ao expirar.
+O jogo inicia pelo menu. Novo Jogo começa na Fase 1; Continuar retoma a entrada da fase salva. O campo `scope` em `manifest.json` identifica o pacote: `prototype` contém as Fases 1 e 2 e termina após a segunda; `full` contém a campanha de 18 fases e termina após o Jardim das Entrelinhas; `phase18` abre diretamente o jardim ao escolher Novo Jogo, para testar a nova fase sem percorrer as 17 anteriores. Jogar Novamente inicia uma partida com os poderes no estado inicial. Os poderes duram 30 segundos e seus coletáveis reaparecem ao expirar.
 
 | Comando | Ação |
 | --- | --- |

@@ -26,7 +26,7 @@ namespace Dreamscape.EditorTools
         [MenuItem("Dreamscape/Fases/Gerar Fase 18 - Jardim das Entrelinhas")]
         public static void Generate() => PhaseBuildMenu.BuildPhase(Name);
 
-        public static void Preview() => PhasePreview.CaptureScene(Name);
+        public static void Preview() => PhasePreview.CaptureScene(Name, "Logs/Fase18/Previews");
 
         public void Build(PhaseKit kit)
         {
@@ -41,8 +41,9 @@ namespace Dreamscape.EditorTools
             kit.CrumblingPlatform("E18 Atalho de papel", new Vector3(0f, 0f, 9f), new Vector2(3f, 10f), 0.7f);
             kit.Sign("ATALHO", new Vector3(0f, 1.8f, 6.2f), 0f, 0.09f);
             kit.BookPlatform("E18 Margem segura", new Vector3(-5f, 0f, 10f), new Vector2(3f, 16f));
-            kit.Carpet(new Vector3(-5f, 0f, 10f), new Vector2(2f, 15f));
-            kit.Sign("SIGA AS MARGENS AZUIS", new Vector3(-4.8f, 2.8f, 3f), 0f, 0.06f);
+            BlueCarpet(kit, new Vector3(-5f, 0f, 10f), new Vector2(2f, 15f));
+            BlueCarpet(kit, new Vector3(-2.8f, 0f, 2.5f), new Vector2(5.8f, 1.1f));
+            kit.Sign("SIGA AS MARGENS AZUIS", new Vector3(-2.3f, 1.8f, 3f), 0f, 0.045f);
             foreach (float z in new[] { 4f, 10f, 16f })
                 kit.Pole(new Vector3(-7.2f, 0f, z), Blue);
 
@@ -81,6 +82,28 @@ namespace Dreamscape.EditorTools
             kit.DreamClock("Sol entre as paginas", new Vector3(0f, 15f, 65f), 4f, 0f, 1f);
             kit.DreamMotes("Polen de letras", new Vector3(0f, 13f, 28f), new Vector3(24f, 4f, 66f), Blue, 180);
             kit.FallZone(-7f);
+        }
+
+        static void BlueCarpet(PhaseKit kit, Vector3 position, Vector2 size)
+        {
+            const string path = "Assets/Design/Fases/Fase18_TapeteAzul.mat";
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+                AssetDatabase.CreateAsset(material, path);
+            }
+            material.shader = Shader.Find("Universal Render Pipeline/Unlit");
+            material.SetColor("_BaseColor", Blue);
+            EditorUtility.SetDirty(material);
+            GameObject carpet = kit.Carpet(position, size);
+            GameObject stripe = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            stripe.name = "Margem azul - pista visual";
+            Object.DestroyImmediate(stripe.GetComponent<Collider>());
+            stripe.transform.SetParent(carpet.transform, false);
+            stripe.transform.localPosition = Vector3.up * 0.035f;
+            stripe.transform.localScale = new Vector3(size.x * 0.7f, 0.015f, size.y - 0.1f);
+            stripe.GetComponent<Renderer>().sharedMaterial = material;
         }
     }
 }

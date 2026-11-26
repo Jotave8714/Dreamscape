@@ -110,8 +110,8 @@ def main():
     parser.add_argument("--project", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--version", required=True, type=version_name)
     parser.add_argument("--target", choices=["all", *TARGETS], default="all")
-    parser.add_argument("--scope", choices=["full", "prototype"], default="full",
-                        help="full inclui toda a campanha; prototype inclui menu, fases 1-2 e encerramento.")
+    parser.add_argument("--scope", choices=["full", "prototype", "phase18"], default="full",
+                        help="full inclui a campanha; prototype inclui as fases 1-2; phase18 abre diretamente o jardim.")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--backup", type=Path)
     args = parser.parse_args()

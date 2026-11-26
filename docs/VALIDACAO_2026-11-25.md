@@ -8,12 +8,13 @@ Base: `develop` em `ed34b9a`. Branch: `feature/ds19-ds22-jardim-entrelinhas`. Un
 | --- | --- | --- |
 | Reprodução dos defeitos DS-19 na base atual | 2/7 aprovados; cinco falhas reproduzidas | `Logs/DS19/before-current.xml` |
 | Correção DS-19 | 7/7 aprovados | `Logs/DS19/after-current.xml` |
-| PlayMode com interface gráfica | 57/57 aprovados | `Logs/Fase18/playmode-graphics.xml` |
-| EditMode: busca de rotas e seleção de cenas | 18/18 aprovados | `Logs/Fase18/editmode.xml` |
+| PlayMode com interface gráfica | 59/59 aprovados | `Logs/Fase18/playmode-final.xml` |
+| EditMode: busca de rotas e seleção de cenas | 19/19 aprovados | `Logs/Fase18/editmode-final.xml` |
 | Percursos e transições após acrescentar dois testes de player | 8/8 aprovados | `Logs/Fase18/player-routes-editor.xml` |
+| Player macOS fora do Editor | 15/15 aprovados, 0 ignorados | `Logs/DS22/native-player.xml` |
 | Empacotador Python | 12/12 aprovados | `python3 -m unittest discover -s scripts/tests -v` |
 
-A primeira execução PlayMode, sem dispositivo gráfico, passou em 55/57: falharam mouse e captura do cursor. Os dois cenários passaram na repetição com Game View gráfica, junto com toda a suíte. Nenhum teste foi ignorado para obter aprovação.
+A primeira execução PlayMode, sem dispositivo gráfico, passou em 55/57: falharam mouse e captura do cursor. Os dois cenários passaram na repetição com Game View gráfica, junto com toda a suíte. Nenhum teste foi ignorado para obter aprovação. A execução nativa macOS levou 36,3 s de testes, em um player de desenvolvimento com as mesmas cenas e scripts do jogo; esse executável de testes não é o pacote distribuível.
 
 ## O que os testes verificam
 
@@ -38,3 +39,7 @@ Não houve playtest humano cego, avaliação auditiva da equipe nem execução n
 7. Registrar versão, hardware, resultado, problemas e nome do revisor. Copiar o pacote e o checksum para outro dispositivo e verificar a cópia.
 
 A Fase 18 também pode ser aberta diretamente no Editor pela cena `Assets/Scenes/Fase18_JardimDasEntrelinhas.unity`; isso não substitui o aceite do executável no Windows.
+
+## Sincronização dos cards implementados nos PRs
+
+DS-14 e DS-15 foram encerrados com base nas aprovações formais dos PRs #17/#18 e nas regressões atuais. Em 25/11 o usuário confirmou que não há exigência acadêmica adicional ao GDD. DS-19 permanece em revisão cruzada; DS-22 depende do computador Windows, disponível depois. O novo trabalho está no PR #49, em rascunho.

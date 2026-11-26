@@ -28,9 +28,13 @@ Os dois primeiros saltos têm vão de 2 m e subida de 1,7 m. O salto básico sob
 
 O teste de percurso anda desde o spawn, coleta pelo contato físico, pede os dois pulos em frames diferentes e chega à porta sem teleporte. Os testes de falha usam teleporte somente para preparar a queda; não são evidência de conclusão do percurso. A regra do piso falso e as pistas se repetem depois de cada morte. A janela de 0,7 s é fixa; apenas o tremor visual do componente existente varia.
 
+## Teste direto no executável
+
+O pacote `--scope phase18` inicia diretamente o jardim pelo botão Novo Jogo do menu e abre o encerramento ao concluir a fase. Assim é possível revisar a fase nova sem atravessar a campanha inteira. Esse pacote usa o mesmo código e a mesma cena da campanha completa.
+
 ## Construção e evidências
 
-Unity 6000.6.0f1. Menu `Dreamscape > Fases > Gerar Fase 18 - Jardim das Entrelinhas`, ou `-executeMethod Dreamscape.EditorTools.Fase18Builder.Generate`. O gerador recria somente a cena da Fase 18, inclui-a antes do encerramento e ordena as fases. `Fase18Builder.Preview` captura três vistas em `Temp/previews/`.
+Unity 6000.6.0f1. Menu `Dreamscape > Fases > Gerar Fase 18 - Jardim das Entrelinhas`, ou `-executeMethod Dreamscape.EditorTools.Fase18Builder.Generate`. O gerador recria somente a cena da Fase 18, inclui-a antes do encerramento e ordena as fases. `Fase18Builder.Preview` captura três vistas em `Logs/Fase18/Previews/`.
 
 A fase reutiliza modelos próprios do kit de ambiente e as peças procedurais da biblioteca. Não adiciona recursos de terceiros. Estantes de fundo, páginas, livros e partículas ficam fora do volume de movimento. A cena utiliza nove fontes pontuais sem sombras e um sol direcional; desempenho na máquina Windows da apresentação ainda precisa ser medido.
 
