@@ -1,8 +1,10 @@
+using System.Linq;
 using Dreamscape.CameraSystem;
 using Dreamscape.Characters;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 namespace Dreamscape.EditorTools
@@ -11,6 +13,77 @@ namespace Dreamscape.EditorTools
     {
         public const string PlayerPath = "Assets/Prefabs/FirstPersonPlayer.prefab";
         public const string ScenePath = "Assets/Scenes/DS04_Movimento.unity";
+
+        /// <summary>Configura a mesma visão em primeira pessoa para jogadores com ou sem modelo.</summary>
+        public static void ConfigurePlayerView(GameObject player, Camera camera)
+        {
+            CharacterController controller = player.GetComponent<CharacterController>();
+            ThirdPersonCamera orbit = camera.GetComponent<ThirdPersonCamera>();
+            if (orbit != null)
+                Undo.DestroyObjectImmediate(orbit);
+
+            Undo.RecordObject(camera, "Câmera em primeira pessoa");
+            camera.tag = "MainCamera";
+            camera.nearClipPlane = 0.05f;
+            Undo.SetTransformParent(camera.transform, player.transform, "Câmera do jogador");
+            Undo.RecordObject(camera.transform, "Posição dos olhos");
+            camera.transform.localPosition = controller.center + Vector3.up * (controller.height * 0.5f - 0.12f);
+            camera.transform.localRotation = Quaternion.identity;
+
+            FirstPersonCamera view = camera.GetComponent<FirstPersonCamera>();
+            if (view == null)
+                view = Undo.AddComponent<FirstPersonCamera>(camera.gameObject);
+            var serializedView = new SerializedObject(view);
+            serializedView.FindProperty("character").objectReferenceValue = controller;
+            serializedView.ApplyModifiedProperties();
+
+            var serializedInput = new SerializedObject(player.GetComponent<PlayerInputController>());
+            serializedInput.FindProperty("cameraTransform").objectReferenceValue = camera.transform;
+            serializedInput.ApplyModifiedProperties();
+            var serializedMotor = new SerializedObject(player.GetComponent<CharacterMotor>());
+            serializedMotor.FindProperty("rotateTowardsMovement").boolValue = false;
+            serializedMotor.ApplyModifiedProperties();
+
+            // A cabeça e o corpo não cobrem a visão por dentro; a sombra do protagonista permanece.
+            foreach (Renderer renderer in player.GetComponentsInChildren<Renderer>(true))
+            {
+                Undo.RecordObject(renderer, "Modelo em primeira pessoa");
+                renderer.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                PrefabUtility.RecordPrefabInstancePropertyModifications(renderer);
+            }
+        }
+
+        [MenuItem("Dreamscape/Converter fases para primeira pessoa")]
+        public static void ConvertPlayableScenes()
+        {
+            if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                return;
+            SceneSetup[] previous = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                foreach (EditorBuildSettingsScene entry in EditorBuildSettings.scenes.Where(s => s.enabled))
+                {
+                    Scene scene = EditorSceneManager.OpenScene(entry.path, OpenSceneMode.Single);
+                    ThirdPersonCamera[] cameras = Object.FindObjectsByType<ThirdPersonCamera>(FindObjectsInactive.Include);
+                    if (cameras.Length == 0)
+                        continue;
+                    foreach (ThirdPersonCamera orbit in cameras)
+                    {
+                        var serializedOrbit = new SerializedObject(orbit);
+                        Transform target = serializedOrbit.FindProperty("target").objectReferenceValue as Transform;
+                        GameObject player = target != null ? target.gameObject : Object.FindAnyObjectByType<PlayerInputController>().gameObject;
+                        ConfigurePlayerView(player, orbit.GetComponent<Camera>());
+                    }
+                    EditorSceneManager.SaveScene(scene);
+                    Debug.Log($"FIRST_PERSON_CONVERTED: {entry.path}");
+                }
+            }
+            finally
+            {
+                if (previous.Length > 0)
+                    EditorSceneManager.RestoreSceneManagerSetup(previous);
+            }
+        }
 
         [MenuItem("Dreamscape/Criar cena de teste DS-04")]
         public static void CreateTestScene()
@@ -30,20 +103,11 @@ namespace Dreamscape.EditorTools
             controller.skinWidth = 0.028f;
             controller.stepOffset = 0.3f;
             controller.minMoveDistance = 0f;
-            CharacterMotor motor = player.AddComponent<CharacterMotor>();
-            var serializedMotor = new SerializedObject(motor);
-            serializedMotor.FindProperty("rotateTowardsMovement").boolValue = false;
-            serializedMotor.ApplyModifiedPropertiesWithoutUndo();
-            PlayerInputController input = player.AddComponent<PlayerInputController>();
+            player.AddComponent<CharacterMotor>();
+            player.AddComponent<PlayerInputController>();
 
             GameObject view = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener)) { tag = "MainCamera" };
-            view.transform.SetParent(player.transform, false);
-            view.transform.localPosition = Vector3.up * 1.64f;
-            view.GetComponent<Camera>().nearClipPlane = 0.05f;
-            view.AddComponent<FirstPersonCamera>();
-            var serializedInput = new SerializedObject(input);
-            serializedInput.FindProperty("cameraTransform").objectReferenceValue = view.transform;
-            serializedInput.ApplyModifiedPropertiesWithoutUndo();
+            ConfigurePlayerView(player, view.GetComponent<Camera>());
 
             PrefabUtility.SaveAsPrefabAssetAndConnect(player, PlayerPath, InteractionMode.AutomatedAction);
             player.transform.position = new Vector3(0f, 0.1f, -5f);

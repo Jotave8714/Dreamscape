@@ -18098,8 +18098,8 @@ GameObject:
   - component: {fileID: 891825269}
   - component: {fileID: 891825268}
   - component: {fileID: 891825267}
-  - component: {fileID: 891825266}
   - component: {fileID: 891825270}
+  - component: {fileID: 891825271}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -18107,36 +18107,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &891825266
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 891825265}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46ebff278a4c16d3a8597b945ea1276c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Dreamscape.CameraSystem.ThirdPersonCamera
-  target: {fileID: 1022897673}
-  pivotOffset: {x: 0, y: 1.5, z: 0}
-  distance: 4
-  actions: {fileID: 0}
-  actionMap: Player
-  mouseSensitivity: {x: 0.12, y: 0.1}
-  stickSensitivity: {x: 180, y: 120}
-  invertY: 0
-  minPitch: -30
-  maxPitch: 70
-  followSharpness: 15
-  zoomOutSharpness: 6
-  collisionRadius: 0.2
-  minDistance: 0.6
-  collisionMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  lockCursor: 1
 --- !u!81 &891825267
 AudioListener:
   m_ObjectHideFlags: 0
@@ -18176,7 +18146,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.05
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -18204,12 +18174,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 891825265}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1305262, y: 0, z: 0, w: 0.9914449}
-  m_LocalPosition: {x: 0, y: 2.5, z: -4}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.64, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1022897673}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &891825270
 MonoBehaviour:
@@ -18255,6 +18225,23 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &891825271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891825265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69aea6e01aa9141e3a4d7701225fe1aa, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Dreamscape.Runtime::Dreamscape.CameraSystem.FirstPersonCamera
+  character: {fileID: 1022897676}
+  mouseSensitivity: {x: 0.12, y: 0.1}
+  stickSensitivity: {x: 180, y: 120}
+  eyeInset: 0.12
+  pitchLimit: 85
 --- !u!1 &891922795
 GameObject:
   m_ObjectHideFlags: 0
@@ -23283,6 +23270,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1093910808}
+  - {fileID: 891825269}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1022897674
@@ -23299,7 +23287,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Dreamscape.Characters.PlayerInputController
   actions: {fileID: 0}
   actionMap: Player
-  cameraTransform: {fileID: 0}
+  cameraTransform: {fileID: 891825269}
   animatorController: {fileID: 0}
   toggleCrouch: 1
   toggleSprint: 0
@@ -23322,7 +23310,7 @@ MonoBehaviour:
   deceleration: 30
   airControl: 0.35
   turnSpeed: 720
-  rotateTowardsMovement: 1
+  rotateTowardsMovement: 0
   jumpHeight: 1.1
   gravity: -20
   maxFallSpeed: 40
@@ -24645,6 +24633,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 5c963533d9ed23f9094893094800a23f, type: 3}
       propertyPath: m_Name
       value: Protagonist
+      objectReference: {fileID: 0}
+    - target: {fileID: 9002028887382611063, guid: 5c963533d9ed23f9094893094800a23f, type: 3}
+      propertyPath: m_CastShadows
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -52466,7 +52458,6 @@ SceneRoots:
   - {fileID: 998290905}
   - {fileID: 1022897673}
   - {fileID: 1662808073}
-  - {fileID: 891825269}
   - {fileID: 1227498799}
   - {fileID: 2079815129}
   - {fileID: 1408468231}
