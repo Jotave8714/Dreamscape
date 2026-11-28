@@ -60,6 +60,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Fase17_Despertar.unity
     guid: a22cbdf3f8042447e85263fdfa88e83b
   - enabled: 1
+    path: Assets/Scenes/Fase18_JardimDasEntrelinhas.unity
+    guid: e62a5f97a428e4ff88d30df27b665692
+  - enabled: 1
     path: Assets/Scenes/PrototypeEnding.unity
     guid: b282875bb7aed4ebebbb32cea5fe97c8
   - enabled: 0

@@ -67,3 +67,7 @@ Peças da biblioteca:
 As Fases 1 e 2 são decoradas com `PhaseKit.Dress(scene, theme)`, que cria tudo sob o objeto `Cenario biblioteca` e pode rodar de novo sem duplicar.
 
 Para gerar uma fase: menu **Dreamscape > Fases > Gerar todas as fases novas**, ou `PhaseBuildMenu.BuildPhase("NomeDaCena")`. As fases entram no build antes do `PrototypeEnding`.
+
+## Epílogo adicional — Fase 18
+
+O Jardim das Entrelinhas continua a biblioteca em um jardim de livros com luz de manhã, margens azuis e um último desafio de pulo duplo. A porta da Fase 17 agora leva ao epílogo e o encerramento segue a porta da Fase 18. Geometria, reconstrução e evidências em [Fase18.md](Fase18.md).

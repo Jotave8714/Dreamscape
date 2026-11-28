@@ -2,6 +2,7 @@
 using System.Collections;
 using System.IO;
 using System.Linq;
+using Dreamscape.CameraSystem;
 using Dreamscape.Characters;
 using Dreamscape.Core;
 using Dreamscape.PowerUps;
@@ -22,7 +23,7 @@ namespace Dreamscape.Tests
         const string FirstPhase = "DS07_Fase1_Jogavel";
         const string SecondPhase = "DS09_Fase2_Jogavel";
         const string ThirdPhase = "Fase3_CorredorDasLuzes";
-        const string LastPhase = "Fase17_Despertar";
+        const string LastPhase = "Fase18_JardimDasEntrelinhas";
 
         byte[] originalSave;
         string savePath;
@@ -106,6 +107,51 @@ namespace Dreamscape.Tests
                     ? Object.FindAnyObjectByType<DoubleJumpPickup>() != null
                     : Object.FindAnyObjectByType<SpeedPickup>() != null, Is.True);
             }
+        }
+
+        [UnityTest]
+        public IEnumerator BothPhaseCamerasFollowCrouchTeleportAndPauseInFirstPerson()
+        {
+            foreach (string phase in new[] { FirstPhase, SecondPhase })
+            {
+                yield return Load(phase);
+                PlayerInputController player = Object.FindAnyObjectByType<PlayerInputController>();
+                Camera camera = Camera.main;
+                Assert.That(camera.GetComponent<FirstPersonCamera>(), Is.Not.Null, phase);
+                Assert.That(Object.FindObjectsByType<ThirdPersonCamera>(), Is.Empty, phase);
+                Assert.That(camera.transform.IsChildOf(player.transform), Is.True, phase);
+                player.SetInputEnabled(false);
+                CharacterController controller = player.GetComponent<CharacterController>();
+                float standingEye = camera.transform.position.y - player.transform.position.y;
+                player.Motor.SetCrouch(true);
+                yield return new WaitForSeconds(0.4f);
+                Assert.That(camera.transform.position.y - player.transform.position.y, Is.LessThan(standingEye - 0.5f), phase);
+                AssertCameraAtEyes(camera, controller);
+
+                Vector3 destination = player.transform.position + Vector3.right * 0.5f;
+                player.Motor.Teleport(destination, Quaternion.Euler(0f, 90f, 0f));
+                yield return null;
+                yield return null;
+                AssertCameraAtEyes(camera, controller);
+
+                GamePause.Pause();
+                Vector3 position = camera.transform.position;
+                Quaternion rotation = camera.transform.rotation;
+                yield return new WaitForSecondsRealtime(0.1f);
+                Assert.That(Vector3.Distance(camera.transform.position, position), Is.LessThan(0.001f), phase);
+                Assert.That(Quaternion.Angle(camera.transform.rotation, rotation), Is.LessThan(0.001f), phase);
+                Assert.That(Cursor.lockState, Is.EqualTo(CursorLockMode.None), phase);
+                GamePause.Resume();
+                yield return null;
+                yield return null;
+                Assert.That(Cursor.lockState, Is.EqualTo(CursorLockMode.Locked), phase);
+            }
+        }
+
+        static void AssertCameraAtEyes(Camera camera, CharacterController controller)
+        {
+            Vector3 eye = controller.transform.TransformPoint(controller.center + Vector3.up * (controller.height * 0.5f - 0.12f));
+            Assert.That(Vector3.Distance(camera.transform.position, eye), Is.LessThan(0.001f));
         }
 
         [UnityTest]

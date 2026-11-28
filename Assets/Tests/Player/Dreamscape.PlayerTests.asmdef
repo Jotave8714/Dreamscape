@@ -1,0 +1,5 @@
+{
+    "name": "Dreamscape.PlayerTests",
+    "references": ["Dreamscape.Runtime", "Unity.InputSystem", "UnityEngine.UI"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}

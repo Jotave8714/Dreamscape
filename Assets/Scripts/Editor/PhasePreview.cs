@@ -39,9 +39,9 @@ namespace Dreamscape.EditorTools
         }
 
         /// <summary>Captura uma cena (nome sem extensão) em Temp/previews: visão do jogador, visão alta atrás dele e aérea.</summary>
-        public static void CaptureScene(string sceneName)
+        public static void CaptureScene(string sceneName, string outputDirectory = null)
         {
-            string dir = Path.GetFullPath("Temp/previews");
+            string dir = Path.GetFullPath(outputDirectory ?? "Temp/previews");
             Directory.CreateDirectory(dir);
             string[] guids = AssetDatabase.FindAssets(sceneName + " t:Scene", new[] { "Assets/Scenes" });
             foreach (string guid in guids)

@@ -163,3 +163,7 @@ Os ciclos usam `Time.timeSinceLevelLoad` e recomeçam iguais a cada tentativa. `
 
 - Fase escrita sem abrir a Unity: precisa de *playtest*. Pontos a observar: o vão da Velocidade (margem de 0,57 m), as ilhas de leitura (0,58 m), a legibilidade das placas sob o sol forte, o número de luzes pontuais (cerca de 45, entre luminárias, abajures e velas) e a orientação do disco da serra no trilho (yaw 90).
 - Com 14 lembranças, a fase é longa (~179 m). Se o *playtest* mostrar cansaço, o primeiro corte sugerido é a oficina (F6), que repete a ideia da última serra.
+
+## Continuação da campanha — 25/11/2026
+
+Na campanha completa atual, a porta desta fase segue para a Fase 18, Jardim das Entrelinhas. O encerramento vem depois do novo epílogo. A geometria e os desafios da Fase 17 foram preservados; a progressão segue a ordem do build.
