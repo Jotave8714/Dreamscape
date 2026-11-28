@@ -1,4 +1,3 @@
-using Dreamscape.CameraSystem;
 using Dreamscape.Characters;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -8,7 +7,7 @@ namespace Dreamscape.EditorTools
 {
     /// <summary>
     /// Menu "Dreamscape > Montar personagens na cena": cria (ou atualiza) o Player com o modelo do protagonista,
-    /// a Moema acompanhante e a câmera em terceira pessoa, já com CharacterController dimensionado.
+    /// a Moema acompanhante e a câmera em primeira pessoa, já com CharacterController dimensionado.
     /// Pode rodar de novo sem duplicar nada.
     /// </summary>
     public static class CharacterSetupMenu
@@ -40,11 +39,7 @@ namespace Dreamscape.EditorTools
                 Undo.RegisterCreatedObjectUndo(go, "Câmera");
                 cam = go.GetComponent<Camera>();
             }
-            ThirdPersonCamera tpc = GetOrAdd<ThirdPersonCamera>(cam.gameObject);
-            SetReference(tpc, "target", player.transform);
-            Undo.RecordObject(cam.transform, "Câmera");
-            cam.transform.SetPositionAndRotation(player.transform.position + new Vector3(0f, 2.5f, -4f),
-                Quaternion.Euler(15f, 0f, 0f));
+            FirstPersonSetupMenu.ConfigurePlayerView(player, cam);
 
             EnsureGround(player.transform.position);
 

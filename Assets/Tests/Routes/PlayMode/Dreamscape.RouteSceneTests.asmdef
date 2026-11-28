@@ -1,0 +1,5 @@
+{
+    "name": "Dreamscape.RouteSceneTests",
+    "references": ["Dreamscape.Runtime"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}

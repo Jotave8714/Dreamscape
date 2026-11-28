@@ -1,0 +1,6 @@
+{
+    "name": "Dreamscape.BuildTests",
+    "references": ["Dreamscape.Editor", "Dreamscape.Runtime"],
+    "includePlatforms": ["Editor"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}

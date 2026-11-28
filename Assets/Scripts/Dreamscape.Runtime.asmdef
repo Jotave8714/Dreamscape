@@ -1,0 +1,5 @@
+{
+    "name": "Dreamscape.Runtime",
+    "rootNamespace": "Dreamscape",
+    "references": ["Unity.InputSystem", "UnityEngine.UI"]
+}

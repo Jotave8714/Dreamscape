@@ -52,3 +52,9 @@ Thumbs.db
 # Blender (backups automáticos)
 *.blend1
 *.blend2
+
+.claude
+
+# Python build tools
+__pycache__/
+*.py[cod]
